@@ -1,2 +1,2 @@
-![alt tag](https://raw.github.com/nathanchau/make/Misc/make.png)
+![alt tag](/Misc/make.png?raw=true)
 Make is a prototyping tool for virtual reality, built for artists. 
