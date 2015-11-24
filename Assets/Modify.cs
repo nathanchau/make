@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 // Allows for _creation and deletion of blocks
 // as well as navigation around the object
@@ -19,6 +20,7 @@ public class Modify : MonoBehaviour
     private const float clickHoldDuration = 0.05f;
     private float lastClickTime;
     private RaycastHit lastHit = default(RaycastHit);
+	private RaycastHit firstHitOnPlane = default(RaycastHit);
     private int numVerticesOnCurrentPlane = 0;
 
     // List of positions of cubes that have been added
@@ -26,7 +28,9 @@ public class Modify : MonoBehaviour
 
     // Pen Mode Variables
     // List of vertices that have been added (for pen mode)
+	List<List<WorldPos>> edgeList = new List<List<WorldPos>>();
     List<WorldPos> vertexPosList = new List<WorldPos>();
+	List<WorldPos> fillPosList = new List<WorldPos>();
     // Current Plane
     Plane currentPlane = new Plane();
 
@@ -154,6 +158,9 @@ public class Modify : MonoBehaviour
 
                 // Null out lastHit
                 lastHit = default(RaycastHit);
+
+				// Null out poslist
+				posList = new List<WorldPos>();
             }
         }
         else if (inPenMode) // In Pen Mode
@@ -177,21 +184,36 @@ public class Modify : MonoBehaviour
                             //  and set all blocks we intersected
                             List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(lastHit, hit, new BlockTemp(), true);
                             posList.AddRange(placedPosList);
+							edgeList.Add(placedPosList);
                             vertexPosList.Add(placedPosList[placedPosList.Count - 1]);
+							Debug.Log("z being placed: " + placedPosList[placedPosList.Count - 1].z);
                             lastHit = hit;
+
                             numVerticesOnCurrentPlane++;
+							if (numVerticesOnCurrentPlane == 1)
+							{
+								Debug.Log("first hit on plane set");
+								firstHitOnPlane = hit;
+							}
                         }
                     }
 
-                    // If 3 points placed so far, then have to fill in the plane
+                    // If 3 points placed so far
                     if (numVerticesOnCurrentPlane == 3)
                     {
-                        Vector3 p1 = WorldPos.VectorFromWorldPos(vertexPosList[0]);
-                        Vector3 p2 = WorldPos.VectorFromWorldPos(vertexPosList[1]);
-                        Vector3 p3 = WorldPos.VectorFromWorldPos(vertexPosList[2]);
+						Vector3 p1 = WorldPos.VectorFromWorldPos(vertexPosList[vertexPosList.Count - 3]);
+						Vector3 p2 = WorldPos.VectorFromWorldPos(vertexPosList[vertexPosList.Count - 2]);
+                        Vector3 p3 = WorldPos.VectorFromWorldPos(vertexPosList[vertexPosList.Count - 1]);
+						Debug.Log(p1.z + "," + p2.z + "," + p3.z);
                         currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
-                        // Fill in the plane
 
+						// [ ] - Slight problem here - erases first block - add an optional variable to function
+						List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
+						fillPosList.AddRange(placedPosList);
+						edgeList.Add(placedPosList);
+
+						placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), edgeList, currentPlane, hit, new BlockTemp());
+						fillPosList.AddRange(placedPosList);
                     }
                     // Else if >3 points placed so far, first have to check if new point is coplanar
                     //  If point is coplanar, then have to refill plane
@@ -202,9 +224,26 @@ public class Modify : MonoBehaviour
                         Vector3 currentPoint = WorldPos.VectorFromWorldPos(vertexPosList[vertexPosList.Count - 1]);
                         if (Plane.isCoplanar(currentPlane, currentPoint))
                         {
-                            // Fill in the plane again
+                            // Erase current fill
+							EditTerrain.SetAllBlocksGivenPos(fillPosList, hit, new BlockAir());
+							fillPosList = new List<WorldPos>();
+							// Fill in the plane again
+							List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
+							fillPosList.AddRange(placedPosList);
+							// Remove the previously filled in edge
+							edgeList.RemoveAt(edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
+							edgeList.Add(placedPosList);
 
-                        }
+							placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), edgeList, currentPlane, hit, new BlockTemp());
+							fillPosList.AddRange(placedPosList);
+							Debug.Log("is coplanar");
+						}
+						else {
+							currentPlane = new Plane();
+							numVerticesOnCurrentPlane = 1;
+							firstHitOnPlane = hit;
+							edgeList = new List<List<WorldPos>>();
+						}
                     }
                 }
                 else // If raycast hits nothing
@@ -214,6 +253,7 @@ public class Modify : MonoBehaviour
             if (Input.GetMouseButtonDown(1))
             { // Right Click
                 // Change all newly added blocks to the right block type
+				posList.AddRange(fillPosList);
                 RaycastHit hit;
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
                 {
@@ -224,8 +264,18 @@ public class Modify : MonoBehaviour
                     EditTerrain.SetAllBlocksGivenPos(posList, lastHit, new BlockGrass());
                 }
 
+				// RESET EVERYTHING
                 // Null out lastHit
                 lastHit = default(RaycastHit);
+
+				// set number of vertices back to 0
+				numVerticesOnCurrentPlane = 0;
+
+				// Null out poslists
+				posList = new List<WorldPos>();
+				edgeList = new List<List<WorldPos>>();
+				vertexPosList = new List<WorldPos>();
+				fillPosList = new List<WorldPos>();
             }
 
         }

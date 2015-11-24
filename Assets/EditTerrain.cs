@@ -151,18 +151,231 @@ public static class EditTerrain
 
     public static bool SetAllBlocksGivenPos(List<WorldPos> posList, RaycastHit lastHit, Block block)
     {
-        Debug.Log("In Function");
         Chunk chunk = lastHit.collider.GetComponent<Chunk>();
         if (chunk == null)
             return false;
-        Debug.Log("Passed null chunk test");
-        Debug.Log(posList.Count);
 
         foreach (WorldPos pos in posList)
         {
-            Debug.Log(pos);
             chunk.world.SetBlock(pos.x, pos.y, pos.z, block);
         }
         return true;
     }
+
+	public static List<WorldPos> SetAllBlocksInPlane(List<WorldPos> posList, List<List<WorldPos>> edgeList, Plane plane, RaycastHit lastHit, Block block)
+	{
+		Chunk chunk = lastHit.collider.GetComponent<Chunk>();
+		if (chunk == null)
+			return new List<WorldPos>();
+
+		List<WorldPos> filledPosList = new List<WorldPos>();
+
+		// Using equation z = -A/C x - B/C y - D/C where C(z) has largest coefficient
+		// [ ] - How do you make sure it generalizes like this?
+		float A = plane.normal.x;
+		float B = plane.normal.y;
+		float C = plane.normal.z;
+		float D = plane.offset;
+		Debug.Log("A: " + A + ", B: " + B + ", C: " + C + ", D: " + D);
+
+		// Pretty easy actually - in theory, all you do is the regular scan line algorithm over two coordinates
+		//  Then, over last coordinate, which ideally you have the least variation over, you evaluate the point
+		//  based on the other two, say x and y, and then fill at that point
+
+		// 3 Cases - if Least variation is in x, y or z
+
+		if (Mathf.Abs(C) > Mathf.Abs(A) && Mathf.Abs(C) > Mathf.Abs(B)) // z
+		{
+			Debug.Log("Case 1: x-y");
+			// Get ymin, ymax
+			posList.Sort(SortByY);
+			int ymin = posList[0].y;
+			int ymax = posList[posList.Count-1].y;
+			Debug.Log("ymin: " + ymin);
+			Debug.Log("ymax: " + ymax);
+			
+			// For each y, get all points that intersect scan line
+			List<WorldPos> scanIntersection;
+			for (int y = ymin + 1; y < ymax; y++)
+			{
+				Debug.Log("y = " + y);
+				scanIntersection = new List<WorldPos>();
+				// Get list of points that have y-value
+				//  [ ] - This can be optimized
+				foreach (List<WorldPos> edge in edgeList)
+				{
+					foreach (WorldPos pos in edge)
+					{
+						if (pos.y == y)
+						{
+							scanIntersection.Add(pos);
+							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+							break; // only need one per edge
+						}
+					}
+				}
+				
+				// Sort by x
+				scanIntersection.Sort(SortByX);
+				
+				// Fill Pairwise
+				for (int i = 0; i < scanIntersection.Count/2; i++)
+				{
+					int xmin = scanIntersection[2*i].x;
+					int xmax = scanIntersection[2*i + 1].x;
+					Debug.Log("xmin: " + xmin);
+					Debug.Log("xmax: " + xmax);
+					
+					for (int x = xmin + 1; x < xmax; x++)
+					{
+						// Calculate the z-value
+						float z = -A/C*(float)x - B/C*(float)y - D/C;
+						// Place block
+						Block tempBlock = chunk.world.GetBlock(x, y, Mathf.RoundToInt(z));
+						if (tempBlock is BlockAir)
+						{
+							chunk.world.SetBlock(x, y, Mathf.RoundToInt(z), block);
+							filledPosList.Add(new WorldPos(x, y, Mathf.RoundToInt(z)));
+							Debug.Log("Placed: " + x + "," + y + "," + z + "/" + Mathf.RoundToInt(z));
+						}
+					}
+				}
+			}
+		} else if (Mathf.Abs(B) > Mathf.Abs(A) && Mathf.Abs(B) > Mathf.Abs(C)) // y
+		{
+			Debug.Log("Case 2: x-z");
+			// Get zmin, zmax
+			posList.Sort(SortByZ);
+			int zmin = posList[0].z;
+			int zmax = posList[posList.Count-1].z;
+			Debug.Log("zmin: " + zmin);
+			Debug.Log("zmax: " + zmax);
+			
+			// For each z, get all points that intersect scan line
+			List<WorldPos> scanIntersection;
+			for (int z = zmin + 1; z < zmax; z++)
+			{
+				Debug.Log("z = " + z);
+				scanIntersection = new List<WorldPos>();
+				// Get list of points that have y-value
+				//  [ ] - This can be optimized
+				foreach (List<WorldPos> edge in edgeList)
+				{
+					foreach (WorldPos pos in edge)
+					{
+						if (pos.z == z)
+						{
+							scanIntersection.Add(pos);
+							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+							break; // only need one per edge
+						}
+					}
+				}
+				
+				// Sort by x
+				scanIntersection.Sort(SortByX);
+				
+				// Fill Pairwise
+				for (int i = 0; i < scanIntersection.Count/2; i++)
+				{
+					int xmin = scanIntersection[2*i].x;
+					int xmax = scanIntersection[2*i + 1].x;
+					Debug.Log("xmin: " + xmin);
+					Debug.Log("xmax: " + xmax);
+					
+					for (int x = xmin + 1; x < xmax; x++)
+					{
+						// Calculate the y-value
+						float y = -A/B*(float)x - C/B*(float)z - D/B;
+						// Place block
+						Block tempBlock = chunk.world.GetBlock(x, Mathf.RoundToInt(y), z);
+						if (tempBlock is BlockAir)
+						{
+							chunk.world.SetBlock(x, Mathf.RoundToInt(y), z, block);
+							filledPosList.Add(new WorldPos(x, Mathf.RoundToInt(y), z));
+							Debug.Log("Placed: " + x + "," + y + "/" + Mathf.RoundToInt(y) + "," + z);
+						}
+					}
+				}
+			}
+		} else // (A > B && A > C) ie. x
+		{
+			Debug.Log("Case 3: y-z");
+			// Get zmin, zmax
+			posList.Sort(SortByZ);
+			int zmin = posList[0].z;
+			int zmax = posList[posList.Count-1].z;
+			Debug.Log("zmin: " + zmin);
+			Debug.Log("zmax: " + zmax);
+			
+			// For each z, get all points that intersect scan line
+			List<WorldPos> scanIntersection;
+			for (int z = zmin + 1; z < zmax; z++)
+			{
+				Debug.Log("z = " + z);
+				scanIntersection = new List<WorldPos>();
+				// Get list of points that have y-value
+				//  [ ] - This can be optimized
+				foreach (List<WorldPos> edge in edgeList)
+				{
+					foreach (WorldPos pos in edge)
+					{
+						if (pos.z == z)
+						{
+							scanIntersection.Add(pos);
+							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+							break; // only need one per edge
+						}
+					}
+				}
+				
+				// Sort by y
+				scanIntersection.Sort(SortByY);
+				
+				// Fill Pairwise
+				for (int i = 0; i < scanIntersection.Count/2; i++)
+				{
+					int ymin = scanIntersection[2*i].y;
+					int ymax = scanIntersection[2*i + 1].y;
+					Debug.Log("ymin: " + ymin);
+					Debug.Log("ymax: " + ymax);
+					
+					for (int y = ymin + 1; y < ymax; y++)
+					{
+						// Calculate the x-value
+						float x = -B/A*(float)y - C/A*(float)z - D/A;
+						// Place block
+						Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(x), y, z);
+						if (tempBlock is BlockAir)
+						{
+							chunk.world.SetBlock(Mathf.RoundToInt(x), y, z, block);
+							filledPosList.Add(new WorldPos(Mathf.RoundToInt(x), y, z));
+							Debug.Log("Placed: " + Mathf.RoundToInt(x) + "/" + x + "," + y + "," + z);
+						}
+					}
+				}
+			}
+		}
+
+		// [ ] - Eventually, probably want to use incremental calculation for z, as follows:
+		// Shifting along the scan line
+		//  z(x+1,y) = z - A/C
+		// Shifting the scan line down
+		//  z(x+dx,y+1) = z - A/C dx - B/C
+
+		return filledPosList;
+	}
+
+	private static int SortByX(WorldPos p1, WorldPos p2)
+	{
+		return p1.x.CompareTo(p2.x);
+	}
+	private static int SortByY(WorldPos p1, WorldPos p2)
+	{
+		return p1.y.CompareTo(p2.y);
+	}
+	private static int SortByZ(WorldPos p1, WorldPos p2)
+	{
+		return p1.z.CompareTo(p2.z);
+	}
 }

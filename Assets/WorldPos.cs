@@ -37,6 +37,6 @@ public struct WorldPos
 
     public static Vector3 VectorFromWorldPos(WorldPos pos)
     {
-        return new Vector3(pos.x, pos.y, pos.z);
+		return new Vector3((float)pos.x, (float)pos.y, (float)pos.z);
     }
 }
