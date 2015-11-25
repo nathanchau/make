@@ -28,11 +28,15 @@ public class Modify : MonoBehaviour
 
     // Pen Mode Variables
     // List of vertices that have been added (for pen mode)
+	bool firstPlaneSet = false;
 	List<List<WorldPos>> edgeList = new List<List<WorldPos>>();
     List<WorldPos> vertexPosList = new List<WorldPos>();
 	List<WorldPos> fillPosList = new List<WorldPos>();
     // Current Plane
     Plane currentPlane = new Plane();
+	// For previous plane
+	List<List<WorldPos>> previousEdgeList = new List<List<WorldPos>>();
+	List<WorldPos> previousVertexPosList = new List<WorldPos>();
 
     void Start()
 	{
@@ -186,25 +190,25 @@ public class Modify : MonoBehaviour
                             posList.AddRange(placedPosList);
 							edgeList.Add(placedPosList);
                             vertexPosList.Add(placedPosList[placedPosList.Count - 1]);
-							Debug.Log("z being placed: " + placedPosList[placedPosList.Count - 1].z);
+							//Debug.Log("z being placed: " + placedPosList[placedPosList.Count - 1].z);
                             lastHit = hit;
 
                             numVerticesOnCurrentPlane++;
 							if (numVerticesOnCurrentPlane == 1)
 							{
-								Debug.Log("first hit on plane set");
+								//Debug.Log("first hit on plane set");
 								firstHitOnPlane = hit;
 							}
                         }
                     }
-
+					// Drawing bounding planes
                     // If 3 points placed so far
                     if (numVerticesOnCurrentPlane == 3)
                     {
-						Vector3 p1 = WorldPos.VectorFromWorldPos(vertexPosList[vertexPosList.Count - 3]);
-						Vector3 p2 = WorldPos.VectorFromWorldPos(vertexPosList[vertexPosList.Count - 2]);
-                        Vector3 p3 = WorldPos.VectorFromWorldPos(vertexPosList[vertexPosList.Count - 1]);
-						Debug.Log(p1.z + "," + p2.z + "," + p3.z);
+						Vector3 p1 = WorldPos.VectorFromWorldPos(vertexPosList[0]);
+						Vector3 p2 = WorldPos.VectorFromWorldPos(vertexPosList[1]);
+                        Vector3 p3 = WorldPos.VectorFromWorldPos(vertexPosList[2]);
+						//Debug.Log(p1.z + "," + p2.z + "," + p3.z);
                         currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
 
 						// [ ] - Slight problem here - erases first block - add an optional variable to function
@@ -236,15 +240,34 @@ public class Modify : MonoBehaviour
 
 							placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), edgeList, currentPlane, hit, new BlockTemp());
 							fillPosList.AddRange(placedPosList);
-							Debug.Log("is coplanar");
+							//Debug.Log("is coplanar");
 						}
 						else {
+							firstPlaneSet = true;
+
+							// Store previous plane info
+							previousEdgeList = new List<List<WorldPos>>(edgeList);
+							previousEdgeList.RemoveAt(previousEdgeList.Count - 1);
+							previousVertexPosList = new List<WorldPos>(vertexPosList);
+							previousVertexPosList.RemoveAt(previousVertexPosList.Count - 1);
+
+							// Reset plane variables
 							currentPlane = new Plane();
 							numVerticesOnCurrentPlane = 1;
 							firstHitOnPlane = hit;
+							WorldPos tempPos = vertexPosList[vertexPosList.Count - 1];
+							vertexPosList = new List<WorldPos>();
+							vertexPosList.Add(tempPos);
 							edgeList = new List<List<WorldPos>>();
 						}
                     }
+
+					// Drawing lofting planes
+					if (firstPlaneSet)
+					{
+						EditTerrain.LoftAndFillPlanes(previousVertexPosList, previousEdgeList, vertexPosList, edgeList, hit, new BlockTemp());
+					}
+					
                 }
                 else // If raycast hits nothing
                 {
@@ -270,6 +293,8 @@ public class Modify : MonoBehaviour
 
 				// set number of vertices back to 0
 				numVerticesOnCurrentPlane = 0;
+
+				firstPlaneSet = false;
 
 				// Null out poslists
 				posList = new List<WorldPos>();
