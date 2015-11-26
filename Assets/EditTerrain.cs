@@ -419,7 +419,7 @@ public static class EditTerrain
 	                                        List<WorldPos> vertexPosList2, List<List<WorldPos>> edgeList2, 
 	                                        RaycastHit lastHit, Block block)
 	{
-		Debug.Log("Starting Loft and Fill");
+		Debug.Log("STARTING LOFT AND FILL");
 		Chunk chunk = lastHit.collider.GetComponent<Chunk>();
 		if (chunk == null)
 			return new List<WorldPos>();
@@ -430,28 +430,29 @@ public static class EditTerrain
 		// We'll start by drawing the surface
 		// Given two planes that have already been drawn
 		// 1. Decompose the loft surface into a set of triangles
-		List<WorldPos> vertices1 = new List<WorldPos>(vertexPosList1);
-		List<WorldPos> vertices2 = new List<WorldPos>(vertexPosList2);
-		List<List<WorldPos>> edges1 = edgeList1;
-		List<List<WorldPos>> edges2 = edgeList2;
-		// Add the first one at the end so we can wraparound and set last plane
-		vertices1.Add(vertexPosList1[0]);
-		edges1.Add(edgeList1[0]);
+		List<WorldPos> vertices1; // = new List<WorldPos>(vertexPosList1);
+		List<WorldPos> vertices2; // = new List<WorldPos>(vertexPosList2);
+		List<List<WorldPos>> edges1; // = edgeList1;
+		List<List<WorldPos>> edges2; // = edgeList2;
 
 		// Don't really need this
-//		if (vertexPosList1.Count > vertexPosList2.Count)
-//		{
-//			// Set list 1 to be polygon with more vertices
-//			vertices1 = vertexPosList1;
-//			vertices2 = vertexPosList2;
-//			edges1 = edgeList1;
-//			edges2 = edgeList2;
-//		} else {
-//			vertices1 = vertexPosList2;
-//			vertices2 = vertexPosList1;
-//			edges1 = edgeList2;
-//			edges2 = edgeList1;
-//		}
+		if (vertexPosList1.Count > vertexPosList2.Count)
+		{
+			// Set list 1 to be polygon with more vertices
+			vertices1 = new List<WorldPos>(vertexPosList1);
+			vertices2 = new List<WorldPos>(vertexPosList2);
+			edges1 = new List<List<WorldPos>>(edgeList1);
+			edges2 = new List<List<WorldPos>>(edgeList2);
+		} else {
+			vertices1 = new List<WorldPos>(vertexPosList2);
+			vertices2 = new List<WorldPos>(vertexPosList1);
+			edges1 = new List<List<WorldPos>>(edgeList2);
+			edges2 = new List<List<WorldPos>>(edgeList1);
+		}
+
+		// Add the first one at the end so we can wraparound and set last plane
+		vertices1.Add(vertices1[0]);
+		edges1.Add(edges1[0]);
 
 		// Create copies of two faces and set them so they're centered at 0, faces are aligned the same
 		List<WorldPos> centeredList1 = centerAndAlignPolygon(vertices1);
@@ -494,6 +495,25 @@ public static class EditTerrain
 			edges2.Reverse();
 		}
 
+		foreach (WorldPos pos in vertices1)
+		{
+			Debug.Log("vertices1: " + pos.x + "," + pos.y + "," + pos.z);
+		}
+		foreach (WorldPos pos in vertices2)
+		{
+			Debug.Log("vertices2: " + pos.x + "," + pos.y + "," + pos.z);
+		}
+		foreach (List<WorldPos> edge in edges1)
+		{
+			Debug.Log("edges1 first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z);
+			Debug.Log("edges1 last: " + edge[edge.Count-1].x + "," + edge[edge.Count-1].y + "," + edge[edge.Count-1].z);
+		}
+		foreach (List<WorldPos> edge in edges2)
+		{
+			Debug.Log("edges2 first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z);
+			Debug.Log("edges2 last: " + edge[edge.Count-1].x + "," + edge[edge.Count-1].y + "," + edge[edge.Count-1].z);
+		}
+
 		// Take face with more vertices
 		//  For each vertex, find nearest vertex on the other face, draw an edge
 		//  If there was an edge previously drawn to that vertex, define the triangle, fill it in
@@ -505,9 +525,11 @@ public static class EditTerrain
 		for (int i = 0; i < centeredList1.Count; i++)
 		{
 			Debug.Log("Vertex i = " + i);
+			Debug.Log("with position: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z + ",");
 			int j = indexOfClosestVertex(centeredList1[i], centeredList2);
 			Debug.Log("j = " + j);
-			// Draw edge
+			Debug.Log("with position: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z + ",");
+				// Draw edge
 			List<WorldPos> currentEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j], lastHit, new BlockTemp());
 			filledPosList.AddRange(currentEdge);
 
@@ -551,12 +573,12 @@ public static class EditTerrain
 						// Compares distances
 						if (Vector3.Distance(p2, p3) < Vector3.Distance(p1, p4))
 						{
-							Debug.Log("Setting edge i-1->j");
+							Debug.Log("0 Setting edge i-1=" + (i-1) + "->j=" + j);
 							// Set edge i-1 -> j
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 							
-							Debug.Log("Drawing triangle i-1, j, j-1");
+							Debug.Log("1 Drawing triangle i-1=" + (i-1) + ", j=" + j +", previousVertex=" + (previousVertex));
 							// Draw the triangle i-1, j, j-1
 							Plane currentPlane = Plane.newPlaneWithPoints(p2, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -574,7 +596,7 @@ public static class EditTerrain
 							List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
-							Debug.Log("Drawing triangle i-1, j, i");
+							Debug.Log("2 Drawing triangle i-1=" + (i-1) + ", j=" + j +", i=" + (i));
 							// Draw the triangle i-1, j, i
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
 							currentPosList = new List<WorldPos>();
@@ -588,17 +610,18 @@ public static class EditTerrain
 							currentEdgeList.Add(edges1[i]);
 							currentEdgeList.Add(currentEdge);
 							currentEdgeList.Add(diagonalEdge);
-							
+
 							placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 						} else
 						{
-							Debug.Log("Setting edge i->j-1");
+							Debug.Log("3 Setting edge i=" + (i) + "->j-1=" + (j-1));
 							// Set edge i -> j-1
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[previousVertex], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 							
+							Debug.Log("4 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", j=" + (j));
 							// Draw the triangle i, j-1, j
 							Plane currentPlane = Plane.newPlaneWithPoints(p1, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -616,6 +639,7 @@ public static class EditTerrain
 							List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
+							Debug.Log("5 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", i-1=" + (i-1));
 							// Draw the triangle i, j-1, i-1
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p4);
 							currentPosList = new List<WorldPos>();
@@ -654,12 +678,12 @@ public static class EditTerrain
 						// Compares distances
 						if (Vector3.Distance(p2, p3) < Vector3.Distance(p1, p4))
 						{
-							Debug.Log("Setting edge i-1->j");
+							Debug.Log("6 Setting edge i-1=" + (i-1) + "->j=" + (j));
 							// Set edge i-1 -> j
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 
-							Debug.Log("Drawing triangle i-1, j, j-1");
+							Debug.Log("7 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", j-jOffset=" + (j-jOffset));
 							// Draw the triangle i-1, j, j-1
 							Plane currentPlane = Plane.newPlaneWithPoints(p2, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -677,7 +701,7 @@ public static class EditTerrain
 							List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
-							Debug.Log("Drawing triangle i-1, j, i");
+							Debug.Log("8 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", i=" + (i));
 							// Draw the triangle i-1, j, i
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
 							currentPosList = new List<WorldPos>();
@@ -697,11 +721,12 @@ public static class EditTerrain
 							
 						} else
 						{
-							Debug.Log("Setting edge i->j-1");
+							Debug.Log("9 Setting edge i=" + (i) + "->j-jOffset=" + (j-jOffset));
 							// Set edge i -> j-1
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j-jOffset], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
-							
+
+							Debug.Log("10 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", j=" + (j));
 							// Draw the triangle i, j-1, j
 							Plane currentPlane = Plane.newPlaneWithPoints(p1, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -719,6 +744,7 @@ public static class EditTerrain
 							List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
+							Debug.Log("11 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", i-1=" + (i-1));
 							// Draw the triangle i, j-1, i-1
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p4);
 							currentPosList = new List<WorldPos>();
