@@ -37,6 +37,8 @@ public class Modify : MonoBehaviour
 	// For previous plane
 	List<List<WorldPos>> previousEdgeList = new List<List<WorldPos>>();
 	List<WorldPos> previousVertexPosList = new List<WorldPos>();
+	// For lofting planes
+	List<WorldPos> loftFillPosList = new List<WorldPos>();
 
     void Start()
 	{
@@ -201,9 +203,17 @@ public class Modify : MonoBehaviour
 							}
                         }
                     }
+					// If 2 points so far
+					// Draw edge back as well, so that we don't break loft algorithm
+					if (numVerticesOnCurrentPlane == 2)
+					{
+						List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
+						fillPosList.AddRange(placedPosList);
+						edgeList.Add(placedPosList);
+					}
 					// Drawing bounding planes
                     // If 3 points placed so far
-                    if (numVerticesOnCurrentPlane == 3)
+                    else if (numVerticesOnCurrentPlane == 3)
                     {
 						Vector3 p1 = WorldPos.VectorFromWorldPos(vertexPosList[0]);
 						Vector3 p2 = WorldPos.VectorFromWorldPos(vertexPosList[1]);
@@ -211,9 +221,12 @@ public class Modify : MonoBehaviour
 						//Debug.Log(p1.z + "," + p2.z + "," + p3.z);
                         currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
 
+						// Add edge
 						// [ ] - Slight problem here - erases first block - add an optional variable to function
 						List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
 						fillPosList.AddRange(placedPosList);
+						edgeList.RemoveAt(edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
+						// [ ] - Do you not have to remove from fillposlist???
 						edgeList.Add(placedPosList);
 
 						placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), edgeList, currentPlane, hit, new BlockTemp());
@@ -231,16 +244,16 @@ public class Modify : MonoBehaviour
                             // Erase current fill
 							EditTerrain.SetAllBlocksGivenPos(fillPosList, hit, new BlockAir());
 							fillPosList = new List<WorldPos>();
-							// Fill in the plane again
+							// Add edge
 							List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
 							fillPosList.AddRange(placedPosList);
 							// Remove the previously filled in edge
 							edgeList.RemoveAt(edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
 							edgeList.Add(placedPosList);
-
+							// Fill in the plane again
 							placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), edgeList, currentPlane, hit, new BlockTemp());
 							fillPosList.AddRange(placedPosList);
-							//Debug.Log("is coplanar");
+							Debug.Log("is coplanar");
 						}
 						else {
 							firstPlaneSet = true;
@@ -265,7 +278,10 @@ public class Modify : MonoBehaviour
 					// Drawing lofting planes
 					if (firstPlaneSet)
 					{
-						EditTerrain.LoftAndFillPlanes(previousVertexPosList, previousEdgeList, vertexPosList, edgeList, hit, new BlockTemp());
+						// Erase previous lofting plane
+						EditTerrain.SetAllBlocksGivenPos(loftFillPosList, hit, new BlockAir());
+						// Set new lofting plane
+						loftFillPosList = EditTerrain.LoftAndFillPlanes(previousVertexPosList, previousEdgeList, vertexPosList, edgeList, hit, new BlockTemp());
 					}
 					
                 }
@@ -277,6 +293,7 @@ public class Modify : MonoBehaviour
             { // Right Click
                 // Change all newly added blocks to the right block type
 				posList.AddRange(fillPosList);
+				posList.AddRange(loftFillPosList);
                 RaycastHit hit;
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
                 {
@@ -301,6 +318,7 @@ public class Modify : MonoBehaviour
 				edgeList = new List<List<WorldPos>>();
 				vertexPosList = new List<WorldPos>();
 				fillPosList = new List<WorldPos>();
+				loftFillPosList = new List<WorldPos>();
             }
 
         }
