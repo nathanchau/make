@@ -39,6 +39,7 @@ public class Modify : MonoBehaviour
 	List<WorldPos> previousVertexPosList = new List<WorldPos>();
 	// For lofting planes
 	List<WorldPos> loftFillPosList = new List<WorldPos>();
+    bool isFirstPoint = true;
 
     void Start()
 	{
@@ -190,7 +191,11 @@ public class Modify : MonoBehaviour
                             //  and set all blocks we intersected
                             List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(lastHit, hit, new BlockTemp(), true);
                             posList.AddRange(placedPosList);
-							edgeList.Add(placedPosList);
+                            // If it's the first point being placed, it's going to try to set an edge from null to this point - don't let it
+                            if (isFirstPoint)
+                                isFirstPoint = false;
+                            else
+                                edgeList.Add(placedPosList);
                             vertexPosList.Add(placedPosList[placedPosList.Count - 1]);
 							//Debug.Log("z being placed: " + placedPosList[placedPosList.Count - 1].z);
                             lastHit = hit;
@@ -263,9 +268,14 @@ public class Modify : MonoBehaviour
 							previousEdgeList.RemoveAt(previousEdgeList.Count - 1);
 							previousVertexPosList = new List<WorldPos>(vertexPosList);
 							previousVertexPosList.RemoveAt(previousVertexPosList.Count - 1);
+                            foreach (List<WorldPos> edge in previousEdgeList)
+                            {
+                                Debug.Log("previousEdgeList first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z + " count: " + edge.Count + " / last: " + edge[edge.Count - 1].x + "," + edge[edge.Count - 1].y + "," + edge[edge.Count - 1].z);
+                            }
 
-							// Reset plane variables
-							currentPlane = new Plane();
+
+                            // Reset plane variables
+                            currentPlane = new Plane();
 							numVerticesOnCurrentPlane = 1;
 							firstHitOnPlane = hit;
 							WorldPos tempPos = vertexPosList[vertexPosList.Count - 1];
@@ -274,9 +284,13 @@ public class Modify : MonoBehaviour
 							edgeList = new List<List<WorldPos>>();
 						}
                     }
+                    foreach (List<WorldPos> edge in edgeList)
+                    {
+                        Debug.Log("edgeList with #vertices= " + numVerticesOnCurrentPlane + " first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z + " count: " + edge.Count + " / last: " + edge[edge.Count - 1].x + "," + edge[edge.Count - 1].y + "," + edge[edge.Count - 1].z);
+                    }
 
-					// Drawing lofting planes
-					if (firstPlaneSet)
+                    // Drawing lofting planes
+                    if (firstPlaneSet)
 					{
 						// Erase previous lofting plane
 						EditTerrain.SetAllBlocksGivenPos(loftFillPosList, hit, new BlockAir());
@@ -311,6 +325,7 @@ public class Modify : MonoBehaviour
 				// set number of vertices back to 0
 				numVerticesOnCurrentPlane = 0;
 
+                isFirstPoint = true;
 				firstPlaneSet = false;
 
 				// Null out poslists
