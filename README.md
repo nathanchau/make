@@ -2,7 +2,7 @@
 
 Make is a prototyping tool for virtual reality, built for artists. 
 
-![alt tag](/Misc/progress.gif?raw=true)
+<img src="/Misc/progress.gif" width=400px>
 
 ## To do
 - [ ] Check fillposlist stuff
@@ -15,4 +15,3 @@ Make is a prototyping tool for virtual reality, built for artists.
 - Have to refactor this code at some point
 - After this - planes, then done building for a bit, then interaction triggers, then painting and styling
 - [ ] Can do stylistic fog for fun
-- [x] Use github readme as to-do list?
