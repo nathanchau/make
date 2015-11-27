@@ -234,7 +234,7 @@ public class Modify : MonoBehaviour
 						// [ ] - Do you not have to remove from fillposlist???
 						edgeList.Add(placedPosList);
 
-						placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), edgeList, currentPlane, hit, new BlockTemp());
+						placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), vertexPosList, edgeList, currentPlane, hit, new BlockTemp());
 						fillPosList.AddRange(placedPosList);
                     }
                     // Else if >3 points placed so far, first have to check if new point is coplanar
@@ -256,7 +256,7 @@ public class Modify : MonoBehaviour
 							edgeList.RemoveAt(edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
 							edgeList.Add(placedPosList);
 							// Fill in the plane again
-							placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), edgeList, currentPlane, hit, new BlockTemp());
+							placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), vertexPosList, edgeList, currentPlane, hit, new BlockTemp());
 							fillPosList.AddRange(placedPosList);
 							Debug.Log("is coplanar");
 						}

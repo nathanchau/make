@@ -198,7 +198,7 @@ public static class EditTerrain
         return true;
     }
 
-	public static List<WorldPos> SetAllBlocksInPlane(List<WorldPos> posList, List<List<WorldPos>> edgeList, Plane plane, RaycastHit lastHit, Block block)
+	public static List<WorldPos> SetAllBlocksInPlane(List<WorldPos> posList, List<WorldPos> vertexPosList, List<List<WorldPos>> edgeList, Plane plane, RaycastHit lastHit, Block block)
 	{
 		Chunk chunk = lastHit.collider.GetComponent<Chunk>();
 		if (chunk == null)
@@ -212,7 +212,7 @@ public static class EditTerrain
 		float B = plane.normal.y;
 		float C = plane.normal.z;
 		float D = plane.offset;
-		//Debug.Log("A: " + A + ", B: " + B + ", C: " + C + ", D: " + D);
+		Debug.Log("A: " + A + ", B: " + B + ", C: " + C + ", D: " + D);
 
 		// Pretty easy actually - in theory, all you do is the regular scan line algorithm over two coordinates
 		//  Then, over last coordinate, which ideally you have the least variation over, you evaluate the point
@@ -222,19 +222,19 @@ public static class EditTerrain
 
 		if (Mathf.Abs(C) > Mathf.Abs(A) && Mathf.Abs(C) > Mathf.Abs(B)) // z
 		{
-			//Debug.Log("Case 1: x-y");
+			Debug.Log("Case 1: x-y");
 			// Get ymin, ymax
 			posList.Sort(SortByY);
 			int ymin = posList[0].y;
 			int ymax = posList[posList.Count-1].y;
-			//Debug.Log("ymin: " + ymin);
-			//Debug.Log("ymax: " + ymax);
+			Debug.Log("ymin: " + ymin);
+			Debug.Log("ymax: " + ymax);
 			
 			// For each y, get all points that intersect scan line
 			List<WorldPos> scanIntersection;
 			for (int y = ymin + 1; y < ymax; y++)
 			{
-				//Debug.Log("y = " + y);
+				Debug.Log("y = " + y);
 				scanIntersection = new List<WorldPos>();
 				// Get list of points that have y-value
 				//  [ ] - This can be optimized
@@ -245,7 +245,7 @@ public static class EditTerrain
 						if (pos.y == y)
 						{
 							scanIntersection.Add(pos);
-							//Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
 							break; // only need one per edge
 						}
 					}
@@ -259,8 +259,8 @@ public static class EditTerrain
 				{
 					int xmin = scanIntersection[2*i].x;
 					int xmax = scanIntersection[2*i + 1].x;
-					//Debug.Log("xmin: " + xmin);
-					//Debug.Log("xmax: " + xmax);
+					Debug.Log("xmin: " + xmin);
+					Debug.Log("xmax: " + xmax);
 					
 					for (int x = xmin + 1; x < xmax; x++)
 					{
@@ -272,27 +272,57 @@ public static class EditTerrain
 						{
 							chunk.world.SetBlock(x, y, Mathf.RoundToInt(z), block);
 							filledPosList.Add(new WorldPos(x, y, Mathf.RoundToInt(z)));
-							//Debug.Log("Placed: " + x + "," + y + "," + z + "/" + Mathf.RoundToInt(z));
+							Debug.Log("Placed: " + x + "," + y + "," + z + "/" + Mathf.RoundToInt(z));
 						}
 					}
 				}
 			}
 		} else if (Mathf.Abs(B) > Mathf.Abs(A) && Mathf.Abs(B) > Mathf.Abs(C)) // y
 		{
-			//Debug.Log("Case 2: x-z");
+			Debug.Log("Case 2: x-z");
 			// Get zmin, zmax
 			posList.Sort(SortByZ);
 			int zmin = posList[0].z;
 			int zmax = posList[posList.Count-1].z;
-			//Debug.Log("zmin: " + zmin);
-			//Debug.Log("zmax: " + zmax);
+			Debug.Log("zmin: " + zmin);
+			Debug.Log("zmax: " + zmax);
 			
 			// For each z, get all points that intersect scan line
 			List<WorldPos> scanIntersection;
 			for (int z = zmin + 1; z < zmax; z++)
 			{
-				//Debug.Log("z = " + z);
+				Debug.Log("z = " + z);
 				scanIntersection = new List<WorldPos>();
+
+                // First, handle the special case
+                // If scan line is on a vertex, you either want to take one point, which means you fill beside it
+                //  or take 2 points, which means you don't fill 
+                // We'll take two points if it's a local minimum/maximum, otherwise only take one point
+                // First, detect if we're on a vertex
+                for (int i = 0; i < vertexPosList.Count - 1; i++)
+                {
+                    if (vertexPosList[i].z == z)
+                    {
+                        // If we're on a vertex, then get the edges that connect to it
+                        int indexEdge1 = z - 1;
+                        int indexEdge2 = z + 1;
+                        // Handle wraparound cases
+                        if (indexEdge1 > vertexPosList.Count - 1)
+                            indexEdge1 -= vertexPosList.Count;
+                        else if (indexEdge1 < 0)
+                            indexEdge1 += vertexPosList.Count;
+                        if (indexEdge2 > vertexPosList.Count - 1)
+                            indexEdge2 -= vertexPosList.Count;
+                        else if (indexEdge2 < 0)
+                            indexEdge2 += vertexPosList.Count;
+                        List<WorldPos> edge1 = edgeList[indexEdge1];
+                        List<WorldPos> edge2 = edgeList[indexEdge2];
+
+                        // Now we have to test whether vertex is local minimum/maximum
+                        //  To do this, we'll just look at the endpoints
+                    }
+                }
+
 				// Get list of points that have y-value
 				//  [ ] - This can be optimized
 				foreach (List<WorldPos> edge in edgeList)
@@ -302,7 +332,7 @@ public static class EditTerrain
 						if (pos.z == z)
 						{
 							scanIntersection.Add(pos);
-							//Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
 							break; // only need one per edge
 						}
 					}
@@ -316,8 +346,8 @@ public static class EditTerrain
 				{
 					int xmin = scanIntersection[2*i].x;
 					int xmax = scanIntersection[2*i + 1].x;
-					//Debug.Log("xmin: " + xmin);
-					//Debug.Log("xmax: " + xmax);
+					Debug.Log("xmin: " + xmin);
+					Debug.Log("xmax: " + xmax);
 					
 					for (int x = xmin + 1; x < xmax; x++)
 					{
@@ -329,26 +359,26 @@ public static class EditTerrain
 						{
 							chunk.world.SetBlock(x, Mathf.RoundToInt(y), z, block);
 							filledPosList.Add(new WorldPos(x, Mathf.RoundToInt(y), z));
-							//Debug.Log("Placed: " + x + "," + y + "/" + Mathf.RoundToInt(y) + "," + z);
+							Debug.Log("Placed: " + x + "," + y + "/" + Mathf.RoundToInt(y) + "," + z);
 						}
 					}
 				}
 			}
 		} else // (A > B && A > C) ie. x
 		{
-			//Debug.Log("Case 3: y-z");
+			Debug.Log("Case 3: y-z");
 			// Get zmin, zmax
 			posList.Sort(SortByZ);
 			int zmin = posList[0].z;
 			int zmax = posList[posList.Count-1].z;
-			//Debug.Log("zmin: " + zmin);
-			//Debug.Log("zmax: " + zmax);
+			Debug.Log("zmin: " + zmin);
+			Debug.Log("zmax: " + zmax);
 			
 			// For each z, get all points that intersect scan line
 			List<WorldPos> scanIntersection;
 			for (int z = zmin + 1; z < zmax; z++)
 			{
-				//Debug.Log("z = " + z);
+				Debug.Log("z = " + z);
 				scanIntersection = new List<WorldPos>();
 				// Get list of points that have y-value
 				//  [ ] - This can be optimized
@@ -359,7 +389,7 @@ public static class EditTerrain
 						if (pos.z == z)
 						{
 							scanIntersection.Add(pos);
-							//Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
 							break; // only need one per edge
 						}
 					}
@@ -373,8 +403,8 @@ public static class EditTerrain
 				{
 					int ymin = scanIntersection[2*i].y;
 					int ymax = scanIntersection[2*i + 1].y;
-					//Debug.Log("ymin: " + ymin);
-					//Debug.Log("ymax: " + ymax);
+					Debug.Log("ymin: " + ymin);
+					Debug.Log("ymax: " + ymax);
 					
 					for (int y = ymin + 1; y < ymax; y++)
 					{
@@ -386,7 +416,7 @@ public static class EditTerrain
 						{
 							chunk.world.SetBlock(Mathf.RoundToInt(x), y, z, block);
 							filledPosList.Add(new WorldPos(Mathf.RoundToInt(x), y, z));
-							//Debug.Log("Placed: " + Mathf.RoundToInt(x) + "/" + x + "," + y + "," + z);
+							Debug.Log("Placed: " + Mathf.RoundToInt(x) + "/" + x + "," + y + "," + z);
 						}
 					}
 				}
@@ -449,15 +479,6 @@ public static class EditTerrain
 			edges1 = new List<List<WorldPos>>(edgeList2);
 			edges2 = new List<List<WorldPos>>(edgeList1);
 		}
-        foreach (WorldPos pos in vertices2)
-        {
-            Debug.Log("original vertices2: " + pos.x + "," + pos.y + "," + pos.z);
-        }
-        foreach (List<WorldPos> edge in edges2)
-        {
-            Debug.Log("original edges2 first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z);
-            Debug.Log("original edges2 last: " + edge[edge.Count - 1].x + "," + edge[edge.Count - 1].y + "," + edge[edge.Count - 1].z);
-        }
 
         // Add the first one at the end so we can wraparound and set last plane
         vertices1.Add(vertices1[0]);
@@ -503,25 +524,6 @@ public static class EditTerrain
 			edges2.Reverse();
 		}
 
-		foreach (WorldPos pos in vertices1)
-		{
-			Debug.Log("vertices1: " + pos.x + "," + pos.y + "," + pos.z);
-		}
-		foreach (WorldPos pos in vertices2)
-		{
-			Debug.Log("vertices2: " + pos.x + "," + pos.y + "," + pos.z);
-		}
-		foreach (List<WorldPos> edge in edges1)
-		{
-			Debug.Log("edges1 first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z);
-			Debug.Log("edges1 last: " + edge[edge.Count-1].x + "," + edge[edge.Count-1].y + "," + edge[edge.Count-1].z);
-		}
-		foreach (List<WorldPos> edge in edges2)
-		{
-			Debug.Log("edges2 first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z);
-			Debug.Log("edges2 last: " + edge[edge.Count-1].x + "," + edge[edge.Count-1].y + "," + edge[edge.Count-1].z);
-		}
-
 		// Take face with more vertices
 		//  For each vertex, find nearest vertex on the other face, draw an edge
 		//  If there was an edge previously drawn to that vertex, define the triangle, fill it in
@@ -559,7 +561,11 @@ public static class EditTerrain
                     currentPosList.AddRange(edges1[i - 1]);
                     currentPosList.AddRange(currentEdge);
                     currentPosList.AddRange(previousEdge);
-					List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                    List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                    currentVertexPosList.Add(vertices1[i]);
+                    currentVertexPosList.Add(vertices2[j]);
+                    currentVertexPosList.Add(vertices1[i - 1]);
+                    List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 					currentEdgeList.Add(edges1[i - 1]);
 					currentEdgeList.Add(currentEdge);
 					currentEdgeList.Add(previousEdge);
@@ -573,7 +579,7 @@ public static class EditTerrain
                     Debug.Log("edges1[i - 1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                         edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 					filledPosList.AddRange(placedOnPlane);
 				} else {
 					// Might be ambiguous case, or might be switching back to the beginning
@@ -605,7 +611,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges2[previousVertex]);
 							currentPosList.AddRange(diagonalEdge);
 							currentPosList.AddRange(previousEdge);
-							List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                            List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i - 1]);
+                            currentVertexPosList.Add(vertices2[j]);
+                            currentVertexPosList.Add(vertices2[previousVertex]);
+                            List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges2[previousVertex]);
 							currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(previousEdge);
@@ -619,7 +629,7 @@ public static class EditTerrain
                             Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
                                 edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							Debug.Log("2 Drawing triangle i-1=" + (i-1) + ", j=" + j +", i=" + (i));
@@ -632,7 +642,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges1[i-1]);
 							currentPosList.AddRange(currentEdge);
 							currentPosList.AddRange(diagonalEdge);
-							currentEdgeList = new List<List<WorldPos>>();
+                            currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i - 1]);
+                            currentVertexPosList.Add(vertices2[j]);
+                            currentVertexPosList.Add(vertices1[i]);
+                            currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges1[i-1]);
 							currentEdgeList.Add(currentEdge);
 							currentEdgeList.Add(diagonalEdge);
@@ -646,7 +660,7 @@ public static class EditTerrain
                             Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                 edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 						} else
@@ -666,7 +680,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges2[j]);
 							currentPosList.AddRange(diagonalEdge);
 							currentPosList.AddRange(currentEdge);
-							List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                            List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i]);
+                            currentVertexPosList.Add(vertices2[j]);
+                            currentVertexPosList.Add(vertices2[previousVertex]);
+                            List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges2[previousVertex]);
 							currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(currentEdge);
@@ -680,7 +698,7 @@ public static class EditTerrain
                             Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
                                 edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							Debug.Log("5 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", i-1=" + (i-1));
@@ -693,7 +711,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges1[i-1]);
 							currentPosList.AddRange(previousEdge);
 							currentPosList.AddRange(diagonalEdge);
-							currentEdgeList = new List<List<WorldPos>>();
+                            currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i - 1]);
+                            currentVertexPosList.Add(vertices2[previousVertex]);
+                            currentVertexPosList.Add(vertices1[i]);
+                            currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges1[i-1]);
 							currentEdgeList.Add(previousEdge);
 							currentEdgeList.Add(diagonalEdge);
@@ -707,7 +729,7 @@ public static class EditTerrain
                             Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                 edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 						}
 					}
@@ -746,7 +768,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges2[j - jOffset]);
 							currentPosList.AddRange(diagonalEdge);
 							currentPosList.AddRange(previousEdge);
-							List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                            List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i - 1]);
+                            currentVertexPosList.Add(vertices2[j]);
+                            currentVertexPosList.Add(vertices2[j - jOffset]);
+                            List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges2[j - jOffset]);
 							currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(previousEdge);
@@ -760,7 +786,7 @@ public static class EditTerrain
                             Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
                                 edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							Debug.Log("8 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", i=" + (i));
@@ -773,7 +799,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges1[i-1]);
 							currentPosList.AddRange(currentEdge);
 							currentPosList.AddRange(diagonalEdge);
-							currentEdgeList = new List<List<WorldPos>>();
+                            currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i - 1]);
+                            currentVertexPosList.Add(vertices2[j]);
+                            currentVertexPosList.Add(vertices1[i]);
+                            currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges1[i-1]);
 							currentEdgeList.Add(currentEdge);
 							currentEdgeList.Add(diagonalEdge);
@@ -787,7 +817,7 @@ public static class EditTerrain
                             Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                 edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 						} else
@@ -807,7 +837,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges2[j - jOffset]);
 							currentPosList.AddRange(diagonalEdge);
 							currentPosList.AddRange(currentEdge);
-							List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                            List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i]);
+                            currentVertexPosList.Add(vertices2[j]);
+                            currentVertexPosList.Add(vertices2[j - jOffset]);
+                            List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges2[j - jOffset]);
 							currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(currentEdge);
@@ -821,7 +855,7 @@ public static class EditTerrain
                             Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
                                 edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							Debug.Log("11 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", i-1=" + (i-1));
@@ -834,7 +868,11 @@ public static class EditTerrain
 							currentPosList.AddRange(edges1[i-1]);
 							currentPosList.AddRange(previousEdge);
 							currentPosList.AddRange(diagonalEdge);
-							currentEdgeList = new List<List<WorldPos>>();
+                            currentVertexPosList = new List<WorldPos>();
+                            currentVertexPosList.Add(vertices1[i - 1]);
+                            currentVertexPosList.Add(vertices2[j - jOffset]);
+                            currentVertexPosList.Add(vertices1[i]);
+                            currentEdgeList = new List<List<WorldPos>>();
 							currentEdgeList.Add(edges1[i-1]);
 							currentEdgeList.Add(previousEdge);
 							currentEdgeList.Add(diagonalEdge);
@@ -848,7 +886,7 @@ public static class EditTerrain
                             Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                 edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 						}
 					} else 
@@ -886,7 +924,11 @@ public static class EditTerrain
 								currentPosList.AddRange(edges2[tempj - jSign]);
 								currentPosList.AddRange(currentInnerEdge);
 								currentPosList.AddRange(previousInnerEdge);
-								List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                                List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                                currentVertexPosList.Add(vertices1[i - 1]);
+                                currentVertexPosList.Add(vertices2[tempj]);
+                                currentVertexPosList.Add(vertices2[tempj - jSign]);
+                                List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 								currentEdgeList.Add(edges2[tempj - jSign]);
 								currentEdgeList.Add(currentInnerEdge);
 								currentEdgeList.Add(previousInnerEdge);
@@ -900,7 +942,7 @@ public static class EditTerrain
                                 Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                     edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 								filledPosList.AddRange(placedOnPlane);
 								
 							} else if (!ambiguousCaseHandled) {
@@ -929,7 +971,11 @@ public static class EditTerrain
 									currentPosList.AddRange(edges2[tempj - jSign]);
 									currentPosList.AddRange(diagonalEdge);
 									currentPosList.AddRange(previousInnerEdge);
-									List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                                    List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                                    currentVertexPosList.Add(vertices1[i - 1]);
+                                    currentVertexPosList.Add(vertices2[tempj]);
+                                    currentVertexPosList.Add(vertices2[tempj - jSign]);
+                                    List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 									currentEdgeList.Add(edges2[tempj - jSign]);
 									currentEdgeList.Add(diagonalEdge);
 									currentEdgeList.Add(previousInnerEdge);
@@ -943,7 +989,7 @@ public static class EditTerrain
                                     Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                         edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 
 									// Draw the triangle i-1, tempj, i
@@ -955,7 +1001,11 @@ public static class EditTerrain
 									currentPosList.AddRange(edges1[i-1]);
 									currentPosList.AddRange(currentInnerEdge);
 									currentPosList.AddRange(diagonalEdge);
-									currentEdgeList = new List<List<WorldPos>>();
+                                    currentVertexPosList = new List<WorldPos>();
+                                    currentVertexPosList.Add(vertices1[i - 1]);
+                                    currentVertexPosList.Add(vertices2[tempj]);
+                                    currentVertexPosList.Add(vertices1[i]);
+                                    currentEdgeList = new List<List<WorldPos>>();
 									currentEdgeList.Add(edges1[i-1]);
 									currentEdgeList.Add(currentInnerEdge);
 									currentEdgeList.Add(diagonalEdge);
@@ -969,7 +1019,7 @@ public static class EditTerrain
                                     Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                         edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                                    placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 
 								} else
@@ -987,7 +1037,11 @@ public static class EditTerrain
 									currentPosList.AddRange(edges2[tempj - jSign]);
 									currentPosList.AddRange(diagonalEdge);
 									currentPosList.AddRange(currentInnerEdge);
-									List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                                    List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                                    currentVertexPosList.Add(vertices1[i]);
+                                    currentVertexPosList.Add(vertices2[tempj]);
+                                    currentVertexPosList.Add(vertices2[tempj - jSign]);
+                                    List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 									currentEdgeList.Add(edges2[tempj - jSign]);
 									currentEdgeList.Add(diagonalEdge);
 									currentEdgeList.Add(currentInnerEdge);
@@ -1001,7 +1055,7 @@ public static class EditTerrain
                                     Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                         edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 
 									// Draw the triangle i, tempj-1, i-1
@@ -1013,7 +1067,11 @@ public static class EditTerrain
 									currentPosList.AddRange(edges1[i-1]);
 									currentPosList.AddRange(previousInnerEdge);
 									currentPosList.AddRange(diagonalEdge);
-									currentEdgeList = new List<List<WorldPos>>();
+                                    currentVertexPosList = new List<WorldPos>();
+                                    currentVertexPosList.Add(vertices1[i - 1]);
+                                    currentVertexPosList.Add(vertices2[tempj - jSign]);
+                                    currentVertexPosList.Add(vertices1[i]);
+                                    currentEdgeList = new List<List<WorldPos>>();
 									currentEdgeList.Add(edges1[i-1]);
 									currentEdgeList.Add(previousInnerEdge);
 									currentEdgeList.Add(diagonalEdge);
@@ -1027,7 +1085,7 @@ public static class EditTerrain
                                     Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                         edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                                    placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 								}
 
@@ -1049,7 +1107,11 @@ public static class EditTerrain
                                 currentPosList.AddRange(edges2[tempj - jSign]);
                                 currentPosList.AddRange(currentInnerEdge);
                                 currentPosList.AddRange(previousInnerEdge);
-								List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
+                                List<WorldPos> currentVertexPosList = new List<WorldPos>();
+                                currentVertexPosList.Add(vertices1[i]);
+                                currentVertexPosList.Add(vertices2[tempj]);
+                                currentVertexPosList.Add(vertices2[tempj - jSign]);
+                                List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
 								currentEdgeList.Add(edges2[tempj - jSign]);
 								currentEdgeList.Add(currentInnerEdge);
 								currentEdgeList.Add(previousInnerEdge);
@@ -1063,7 +1125,7 @@ public static class EditTerrain
                                 Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                     edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentEdgeList, currentPlane, lastHit, block);
+                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 								filledPosList.AddRange(placedOnPlane);
 								
 							}
