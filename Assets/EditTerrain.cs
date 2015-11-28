@@ -94,7 +94,7 @@ public static class EditTerrain
         return false;
     }
 
-    // Sets all blocks between hit1 and hit2, exclusive hit1, inclusive hit2
+    // Sets all blocks between hit1 and hit2, inclusive hit1, inclusive hit2
     public static List<WorldPos> SetAllBlocksBetween(RaycastHit hit1, RaycastHit hit2, Block block, bool adjacent = false)
     {
         // If previous hit was defaulted out, then just setblock
@@ -132,6 +132,14 @@ public static class EditTerrain
 
         // Makes sense really - you know how many points you have to display, each point is a step along
         //  the axis of longest distance, so you just do it with floats, round it
+
+        // Set first block
+        posList.Add(new WorldPos((int)tempPos.x, (int)tempPos.y, (int)tempPos.z));
+        // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
+        Block tempFirstBlock = chunk.world.GetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z);
+        if (tempFirstBlock is BlockAir)
+            chunk.world.SetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z, block);
+
         for (int i = 0; i < N; i++)
         {
             tempPos = tempPos + step;
@@ -165,10 +173,18 @@ public static class EditTerrain
 		Vector3 step = difference / N;
 		// List of all positions used
 		List<WorldPos> posList = new List<WorldPos>();
-		
-		// Makes sense really - you know how many points you have to display, each point is a step along
-		//  the axis of longest distance, so you just do it with floats, round it
-		for (int i = 0; i < N; i++)
+
+        // Makes sense really - you know how many points you have to display, each point is a step along
+        //  the axis of longest distance, so you just do it with floats, round it
+
+        // Set first block
+        posList.Add(new WorldPos((int)tempPos.x, (int)tempPos.y, (int)tempPos.z));
+        // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
+        Block tempFirstBlock = chunk.world.GetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z);
+        if (tempFirstBlock is BlockAir)
+            chunk.world.SetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z, block);
+
+        for (int i = 0; i < N; i++)
 		{
 			tempPos = tempPos + step;
 			posList.Add(new WorldPos((int)tempPos.x, (int)tempPos.y, (int)tempPos.z));
@@ -214,6 +230,9 @@ public static class EditTerrain
 		float D = plane.offset;
 		Debug.Log("A: " + A + ", B: " + B + ", C: " + C + ", D: " + D);
 
+        foreach (WorldPos pos in vertexPosList)
+            Debug.Log(pos.x + "," + pos.y + "," + pos.z);
+
 		// Pretty easy actually - in theory, all you do is the regular scan line algorithm over two coordinates
 		//  Then, over last coordinate, which ideally you have the least variation over, you evaluate the point
 		//  based on the other two, say x and y, and then fill at that point
@@ -236,20 +255,85 @@ public static class EditTerrain
 			{
 				Debug.Log("y = " + y);
 				scanIntersection = new List<WorldPos>();
-				// Get list of points that have y-value
-				//  [ ] - This can be optimized
-				foreach (List<WorldPos> edge in edgeList)
+
+                // List of edge indices to ignore
+                List<int> ignoreEdgeIndices = new List<int>();
+
+                // First, handle the special case
+                // If scan line is on a vertex, you either want to take one point, which means you fill beside it
+                //  or take 2 points, which means you don't fill 
+                // We'll take two points if it's a local minimum/maximum, otherwise only take one point
+                // First, detect if we're on a vertex
+                for (int i = 0; i < vertexPosList.Count - 1; i++)
+                {
+                    if (vertexPosList[i].y == y)
+                    {
+                        // If we're on a vertex, then get the edges that connect to it
+                        int indexEdge1 = i - 1;
+                        int indexEdge2 = i + 1;
+                        // Handle wraparound cases
+                        if (indexEdge1 > vertexPosList.Count - 1)
+                            indexEdge1 -= vertexPosList.Count;
+                        else if (indexEdge1 < 0)
+                            indexEdge1 += vertexPosList.Count;
+                        if (indexEdge2 > vertexPosList.Count - 1)
+                            indexEdge2 -= vertexPosList.Count;
+                        else if (indexEdge2 < 0)
+                            indexEdge2 += vertexPosList.Count;
+                        List<WorldPos> edge1 = edgeList[indexEdge1];
+                        List<WorldPos> edge2 = edgeList[indexEdge2];
+
+                        // Now we have to test whether vertex is local minimum/maximum
+                        //  To do this, we'll just look at the endpoints
+                        //  Get the endpoints of edges that aren't at the vertex
+                        WorldPos p1 = edge1[0];
+                        WorldPos p2 = edge1[edge1.Count - 1];
+                        WorldPos p3 = edge2[0];
+                        WorldPos p4 = edge2[edge2.Count - 1];
+                        Vector3 end1;
+                        Vector3 end2;
+                        if ((WorldPos.VectorFromWorldPos(p1) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude > (WorldPos.VectorFromWorldPos(p1) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude)
+                            end1 = WorldPos.VectorFromWorldPos(p1);
+                        else
+                            end1 = WorldPos.VectorFromWorldPos(p2);
+                        if ((WorldPos.VectorFromWorldPos(p3) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude > (WorldPos.VectorFromWorldPos(p4) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude)
+                            end2 = WorldPos.VectorFromWorldPos(p3);
+                        else
+                            end2 = WorldPos.VectorFromWorldPos(p4);
+
+                        // If signs of z values are the same, then we keep both
+                        // Otherwise, we keep only one
+                        if (((end1 - WorldPos.VectorFromWorldPos(vertexPosList[i])).y < 0 && (end2 - WorldPos.VectorFromWorldPos(vertexPosList[i])).y < 0)
+                            || ((end1 - WorldPos.VectorFromWorldPos(vertexPosList[i])).y > 0 && (end2 - WorldPos.VectorFromWorldPos(vertexPosList[i])).y > 0))
+                        {
+                            // Keep both points
+                        }
+                        else
+                        {
+                            // Keep only one
+                            Debug.Log("KEPT ONLY ONE");
+                            ignoreEdgeIndices.Add(indexEdge1);
+                        }
+                    }
+                }
+
+                // Get list of points that have y-value
+                //  [ ] - This can be optimized
+                foreach (List<WorldPos> edge in edgeList)
 				{
-					foreach (WorldPos pos in edge)
-					{
-						if (pos.y == y)
-						{
-							scanIntersection.Add(pos);
-							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
-							break; // only need one per edge
-						}
-					}
-				}
+                    if (!ignoreEdgeIndices.Contains(edgeList.IndexOf(edge)))
+                    {
+                        foreach (WorldPos pos in edge)
+                        {
+                            if (pos.y == y)
+                            {
+                                scanIntersection.Add(pos);
+                                Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+                                break; // only need one per edge
+                            }
+                        }
+                    }
+                }
 				
 				// Sort by x
 				scanIntersection.Sort(SortByX);
@@ -294,6 +378,9 @@ public static class EditTerrain
 				Debug.Log("z = " + z);
 				scanIntersection = new List<WorldPos>();
 
+                // List of edge indices to ignore
+                List<int> ignoreEdgeIndices = new List<int>();
+
                 // First, handle the special case
                 // If scan line is on a vertex, you either want to take one point, which means you fill beside it
                 //  or take 2 points, which means you don't fill 
@@ -304,8 +391,8 @@ public static class EditTerrain
                     if (vertexPosList[i].z == z)
                     {
                         // If we're on a vertex, then get the edges that connect to it
-                        int indexEdge1 = z - 1;
-                        int indexEdge2 = z + 1;
+                        int indexEdge1 = i - 1;
+                        int indexEdge2 = i + 1;
                         // Handle wraparound cases
                         if (indexEdge1 > vertexPosList.Count - 1)
                             indexEdge1 -= vertexPosList.Count;
@@ -320,6 +407,35 @@ public static class EditTerrain
 
                         // Now we have to test whether vertex is local minimum/maximum
                         //  To do this, we'll just look at the endpoints
+                        //  Get the endpoints of edges that aren't at the vertex
+                        WorldPos p1 = edge1[0];
+                        WorldPos p2 = edge1[edge1.Count - 1];
+                        WorldPos p3 = edge2[0];
+                        WorldPos p4 = edge2[edge2.Count - 1];
+                        Vector3 end1;
+                        Vector3 end2;
+                        if ((WorldPos.VectorFromWorldPos(p1) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude > (WorldPos.VectorFromWorldPos(p1) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude)
+                            end1 = WorldPos.VectorFromWorldPos(p1);
+                        else
+                            end1 = WorldPos.VectorFromWorldPos(p2);
+                        if ((WorldPos.VectorFromWorldPos(p3) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude > (WorldPos.VectorFromWorldPos(p4) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude)
+                            end2 = WorldPos.VectorFromWorldPos(p3);
+                        else
+                            end2 = WorldPos.VectorFromWorldPos(p4);
+
+                        // If signs of z values are the same, then we keep both
+                        // Otherwise, we keep only one
+                        if (((end1 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z < 0 && (end2 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z < 0) 
+                            || ((end1 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z > 0 && (end2 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z > 0))
+                        {
+                            // Keep both points
+                        }
+                        else
+                        {
+                            // Keep only one
+                            Debug.Log("KEPT ONLY ONE");
+                            ignoreEdgeIndices.Add(indexEdge1);
+                        }
                     }
                 }
 
@@ -327,16 +443,20 @@ public static class EditTerrain
 				//  [ ] - This can be optimized
 				foreach (List<WorldPos> edge in edgeList)
 				{
-					foreach (WorldPos pos in edge)
-					{
-						if (pos.z == z)
-						{
-							scanIntersection.Add(pos);
-							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
-							break; // only need one per edge
-						}
-					}
-				}
+                    if (!ignoreEdgeIndices.Contains(edgeList.IndexOf(edge)))
+                    {
+                        foreach (WorldPos pos in edge)
+                        {
+                            if (pos.z == z)
+                            {
+                                scanIntersection.Add(pos);
+                                Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+                                break; // only need one per edge
+                            }
+                        }
+
+                    }
+                }
 				
 				// Sort by x
 				scanIntersection.Sort(SortByX);
@@ -380,20 +500,85 @@ public static class EditTerrain
 			{
 				Debug.Log("z = " + z);
 				scanIntersection = new List<WorldPos>();
-				// Get list of points that have y-value
-				//  [ ] - This can be optimized
-				foreach (List<WorldPos> edge in edgeList)
+
+                // List of edge indices to ignore
+                List<int> ignoreEdgeIndices = new List<int>();
+
+                // First, handle the special case
+                // If scan line is on a vertex, you either want to take one point, which means you fill beside it
+                //  or take 2 points, which means you don't fill 
+                // We'll take two points if it's a local minimum/maximum, otherwise only take one point
+                // First, detect if we're on a vertex
+                for (int i = 0; i < vertexPosList.Count - 1; i++)
+                {
+                    if (vertexPosList[i].z == z)
+                    {
+                        // If we're on a vertex, then get the edges that connect to it
+                        int indexEdge1 = i - 1;
+                        int indexEdge2 = i + 1;
+                        // Handle wraparound cases
+                        if (indexEdge1 > vertexPosList.Count - 1)
+                            indexEdge1 -= vertexPosList.Count;
+                        else if (indexEdge1 < 0)
+                            indexEdge1 += vertexPosList.Count;
+                        if (indexEdge2 > vertexPosList.Count - 1)
+                            indexEdge2 -= vertexPosList.Count;
+                        else if (indexEdge2 < 0)
+                            indexEdge2 += vertexPosList.Count;
+                        List<WorldPos> edge1 = edgeList[indexEdge1];
+                        List<WorldPos> edge2 = edgeList[indexEdge2];
+
+                        // Now we have to test whether vertex is local minimum/maximum
+                        //  To do this, we'll just look at the endpoints
+                        //  Get the endpoints of edges that aren't at the vertex
+                        WorldPos p1 = edge1[0];
+                        WorldPos p2 = edge1[edge1.Count - 1];
+                        WorldPos p3 = edge2[0];
+                        WorldPos p4 = edge2[edge2.Count - 1];
+                        Vector3 end1;
+                        Vector3 end2;
+                        if ((WorldPos.VectorFromWorldPos(p1) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude > (WorldPos.VectorFromWorldPos(p1) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude)
+                            end1 = WorldPos.VectorFromWorldPos(p1);
+                        else
+                            end1 = WorldPos.VectorFromWorldPos(p2);
+                        if ((WorldPos.VectorFromWorldPos(p3) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude > (WorldPos.VectorFromWorldPos(p4) - WorldPos.VectorFromWorldPos(vertexPosList[i])).magnitude)
+                            end2 = WorldPos.VectorFromWorldPos(p3);
+                        else
+                            end2 = WorldPos.VectorFromWorldPos(p4);
+
+                        // If signs of z values are the same, then we keep both
+                        // Otherwise, we keep only one
+                        if (((end1 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z < 0 && (end2 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z < 0)
+                            || ((end1 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z > 0 && (end2 - WorldPos.VectorFromWorldPos(vertexPosList[i])).z > 0))
+                        {
+                            // Keep both points
+                        }
+                        else
+                        {
+                            // Keep only one
+                            Debug.Log("KEPT ONLY ONE");
+                            ignoreEdgeIndices.Add(indexEdge1);
+                        }
+                    }
+                }
+
+                // Get list of points that have y-value
+                //  [ ] - This can be optimized
+                foreach (List<WorldPos> edge in edgeList)
 				{
-					foreach (WorldPos pos in edge)
-					{
-						if (pos.z == z)
-						{
-							scanIntersection.Add(pos);
-							Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
-							break; // only need one per edge
-						}
-					}
-				}
+                    if (!ignoreEdgeIndices.Contains(edgeList.IndexOf(edge)))
+                    {
+                        foreach (WorldPos pos in edge)
+                        {
+                            if (pos.z == z)
+                            {
+                                scanIntersection.Add(pos);
+                                Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+                                break; // only need one per edge
+                            }
+                        }
+                    }
+                }
 				
 				// Sort by y
 				scanIntersection.Sort(SortByY);
