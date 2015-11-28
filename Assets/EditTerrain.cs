@@ -106,7 +106,7 @@ public static class EditTerrain
             return posList1;
         }
 
-        // 3D extension of Breseham's Line Drawing Algorithm
+        // 3D extension of Bresenham's Line Drawing Algorithm
         //  adapted to use floating point numbers instead of error values
 
         // Note: Very unlikely that you somehow traverse an entire chunk between update calls, but if it somehow happens,
@@ -119,6 +119,8 @@ public static class EditTerrain
         // Get endpoints
         WorldPos pos1 = GetBlockPos(hit1, adjacent);
         WorldPos pos2 = GetBlockPos(hit2, adjacent);
+        Debug.Log("pos1: " + pos1.x + "," + pos1.y + "," + pos1.z);
+        Debug.Log("pos2: " + pos2.x + "," + pos2.y + "," + pos2.z);
         Vector3 p1 = new Vector3(pos1.x, pos1.y, pos1.z);
         Vector3 p2 = new Vector3(pos2.x, pos2.y, pos2.z);
 
@@ -134,21 +136,25 @@ public static class EditTerrain
         //  the axis of longest distance, so you just do it with floats, round it
 
         // Set first block
-        posList.Add(new WorldPos((int)tempPos.x, (int)tempPos.y, (int)tempPos.z));
         // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-        Block tempFirstBlock = chunk.world.GetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z);
-        if (tempFirstBlock is BlockAir)
-            chunk.world.SetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z, block);
+        Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
+        //if (tempFirstBlock is BlockAir)
+        //{
+        chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+        posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
+        //}
 
         for (int i = 0; i < N; i++)
         {
             tempPos = tempPos + step;
-            posList.Add(new WorldPos((int)tempPos.x, (int)tempPos.y, (int)tempPos.z));
 
             // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-            Block tempBlock = chunk.world.GetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z);
+            Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
             if (tempBlock is BlockAir)
-                chunk.world.SetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z, block);
+            {
+                chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+                posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
+            }
         }
 
         // Note: this might not be ideal for "shading in" parts of solids, because it doesn't fill every point it intersects, 
@@ -178,27 +184,31 @@ public static class EditTerrain
         //  the axis of longest distance, so you just do it with floats, round it
 
         // Set first block
-        posList.Add(new WorldPos((int)tempPos.x, (int)tempPos.y, (int)tempPos.z));
         // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-        Block tempFirstBlock = chunk.world.GetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z);
-        if (tempFirstBlock is BlockAir)
-            chunk.world.SetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z, block);
+        Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
+        //if (tempFirstBlock is BlockAir)
+        //{
+        chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+        posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
+        //}
 
         for (int i = 0; i < N; i++)
-		{
-			tempPos = tempPos + step;
-			posList.Add(new WorldPos((int)tempPos.x, (int)tempPos.y, (int)tempPos.z));
-			
-			// Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-			Block tempBlock = chunk.world.GetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z);
-			if (tempBlock is BlockAir)
-				chunk.world.SetBlock((int)tempPos.x, (int)tempPos.y, (int)tempPos.z, block);
-		}
-		
-		// Note: this might not be ideal for "shading in" parts of solids, because it doesn't fill every point it intersects, 
-		//  but rather a single line between the two points
-		
-		return posList;
+        {
+            tempPos = tempPos + step;
+
+            // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
+            Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
+            if (tempBlock is BlockAir)
+            {
+                chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+                posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
+            }
+        }
+
+        // Note: this might not be ideal for "shading in" parts of solids, because it doesn't fill every point it intersects, 
+        //  but rather a single line between the two points
+
+        return posList;
 	}
 	
 	public static bool SetAllBlocksGivenPos(List<WorldPos> posList, RaycastHit lastHit, Block block)
@@ -232,6 +242,13 @@ public static class EditTerrain
 
         foreach (WorldPos pos in vertexPosList)
             Debug.Log(pos.x + "," + pos.y + "," + pos.z);
+        foreach (List<WorldPos> edge in edgeList)
+        {
+            foreach (WorldPos pos in edge)
+            {
+                Debug.Log(edgeList.IndexOf(edge) + ": " + pos.x + "," + pos.y + "," + pos.z);
+            }
+        }
 
 		// Pretty easy actually - in theory, all you do is the regular scan line algorithm over two coordinates
 		//  Then, over last coordinate, which ideally you have the least variation over, you evaluate the point
@@ -650,7 +667,6 @@ public static class EditTerrain
 		List<List<WorldPos>> edges1; // = edgeList1;
 		List<List<WorldPos>> edges2; // = edgeList2;
 
-		// Don't really need this
 		if (vertexPosList1.Count > vertexPosList2.Count)
 		{
 			// Set list 1 to be polygon with more vertices
