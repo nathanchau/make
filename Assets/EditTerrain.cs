@@ -119,8 +119,8 @@ public static class EditTerrain
         // Get endpoints
         WorldPos pos1 = GetBlockPos(hit1, adjacent);
         WorldPos pos2 = GetBlockPos(hit2, adjacent);
-        Debug.Log("pos1: " + pos1.x + "," + pos1.y + "," + pos1.z);
-        Debug.Log("pos2: " + pos2.x + "," + pos2.y + "," + pos2.z);
+        //Debug.Log("pos1: " + pos1.x + "," + pos1.y + "," + pos1.z);
+        //Debug.Log("pos2: " + pos2.x + "," + pos2.y + "," + pos2.z);
         Vector3 p1 = new Vector3(pos1.x, pos1.y, pos1.z);
         Vector3 p2 = new Vector3(pos2.x, pos2.y, pos2.z);
 
@@ -238,17 +238,17 @@ public static class EditTerrain
 		float B = plane.normal.y;
 		float C = plane.normal.z;
 		float D = plane.offset;
-		Debug.Log("A: " + A + ", B: " + B + ", C: " + C + ", D: " + D);
+		//Debug.Log("A: " + A + ", B: " + B + ", C: " + C + ", D: " + D);
 
-        foreach (WorldPos pos in vertexPosList)
-            Debug.Log(pos.x + "," + pos.y + "," + pos.z);
-        foreach (List<WorldPos> edge in edgeList)
-        {
-            foreach (WorldPos pos in edge)
-            {
-                Debug.Log(edgeList.IndexOf(edge) + ": " + pos.x + "," + pos.y + "," + pos.z);
-            }
-        }
+        //foreach (WorldPos pos in vertexPosList)
+        //    Debug.Log(pos.x + "," + pos.y + "," + pos.z);
+        //foreach (List<WorldPos> edge in edgeList)
+        //{
+        //    foreach (WorldPos pos in edge)
+        //    {
+        //        Debug.Log(edgeList.IndexOf(edge) + ": " + pos.x + "," + pos.y + "," + pos.z);
+        //    }
+        //}
 
 		// Pretty easy actually - in theory, all you do is the regular scan line algorithm over two coordinates
 		//  Then, over last coordinate, which ideally you have the least variation over, you evaluate the point
@@ -258,19 +258,19 @@ public static class EditTerrain
 
 		if (Mathf.Abs(C) > Mathf.Abs(A) && Mathf.Abs(C) > Mathf.Abs(B)) // z
 		{
-			Debug.Log("Case 1: x-y");
+			//Debug.Log("Case 1: x-y");
 			// Get ymin, ymax
 			posList.Sort(SortByY);
 			int ymin = posList[0].y;
 			int ymax = posList[posList.Count-1].y;
-			Debug.Log("ymin: " + ymin);
-			Debug.Log("ymax: " + ymax);
+			//Debug.Log("ymin: " + ymin);
+			//Debug.Log("ymax: " + ymax);
 			
 			// For each y, get all points that intersect scan line
 			List<WorldPos> scanIntersection;
 			for (int y = ymin + 1; y < ymax; y++)
 			{
-				Debug.Log("y = " + y);
+				//Debug.Log("y = " + y);
 				scanIntersection = new List<WorldPos>();
 
                 // List of edge indices to ignore
@@ -328,7 +328,7 @@ public static class EditTerrain
                         else
                         {
                             // Keep only one
-                            Debug.Log("KEPT ONLY ONE");
+                            //Debug.Log("KEPT ONLY ONE");
                             ignoreEdgeIndices.Add(indexEdge1);
                         }
                     }
@@ -345,7 +345,7 @@ public static class EditTerrain
                             if (pos.y == y)
                             {
                                 scanIntersection.Add(pos);
-                                Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+                                //Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
                                 break; // only need one per edge
                             }
                         }
@@ -360,8 +360,8 @@ public static class EditTerrain
 				{
 					int xmin = scanIntersection[2*i].x;
 					int xmax = scanIntersection[2*i + 1].x;
-					Debug.Log("xmin: " + xmin);
-					Debug.Log("xmax: " + xmax);
+					//Debug.Log("xmin: " + xmin);
+					//Debug.Log("xmax: " + xmax);
 					
 					for (int x = xmin + 1; x < xmax; x++)
 					{
@@ -373,26 +373,26 @@ public static class EditTerrain
 						{
 							chunk.world.SetBlock(x, y, Mathf.RoundToInt(z), block);
 							filledPosList.Add(new WorldPos(x, y, Mathf.RoundToInt(z)));
-							Debug.Log("Placed: " + x + "," + y + "," + z + "/" + Mathf.RoundToInt(z));
+							//Debug.Log("Placed: " + x + "," + y + "," + z + "/" + Mathf.RoundToInt(z));
 						}
 					}
 				}
 			}
 		} else if (Mathf.Abs(B) > Mathf.Abs(A) && Mathf.Abs(B) > Mathf.Abs(C)) // y
 		{
-			Debug.Log("Case 2: x-z");
+			//Debug.Log("Case 2: x-z");
 			// Get zmin, zmax
 			posList.Sort(SortByZ);
 			int zmin = posList[0].z;
 			int zmax = posList[posList.Count-1].z;
-			Debug.Log("zmin: " + zmin);
-			Debug.Log("zmax: " + zmax);
+			//Debug.Log("zmin: " + zmin);
+			//Debug.Log("zmax: " + zmax);
 			
 			// For each z, get all points that intersect scan line
 			List<WorldPos> scanIntersection;
 			for (int z = zmin + 1; z < zmax; z++)
 			{
-				Debug.Log("z = " + z);
+				//Debug.Log("z = " + z);
 				scanIntersection = new List<WorldPos>();
 
                 // List of edge indices to ignore
@@ -450,7 +450,7 @@ public static class EditTerrain
                         else
                         {
                             // Keep only one
-                            Debug.Log("KEPT ONLY ONE");
+                            //Debug.Log("KEPT ONLY ONE");
                             ignoreEdgeIndices.Add(indexEdge1);
                         }
                     }
@@ -467,7 +467,7 @@ public static class EditTerrain
                             if (pos.z == z)
                             {
                                 scanIntersection.Add(pos);
-                                Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+                                //Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
                                 break; // only need one per edge
                             }
                         }
@@ -483,8 +483,8 @@ public static class EditTerrain
 				{
 					int xmin = scanIntersection[2*i].x;
 					int xmax = scanIntersection[2*i + 1].x;
-					Debug.Log("xmin: " + xmin);
-					Debug.Log("xmax: " + xmax);
+					//Debug.Log("xmin: " + xmin);
+					//Debug.Log("xmax: " + xmax);
 					
 					for (int x = xmin + 1; x < xmax; x++)
 					{
@@ -496,26 +496,26 @@ public static class EditTerrain
 						{
 							chunk.world.SetBlock(x, Mathf.RoundToInt(y), z, block);
 							filledPosList.Add(new WorldPos(x, Mathf.RoundToInt(y), z));
-							Debug.Log("Placed: " + x + "," + y + "/" + Mathf.RoundToInt(y) + "," + z);
+							//Debug.Log("Placed: " + x + "," + y + "/" + Mathf.RoundToInt(y) + "," + z);
 						}
 					}
 				}
 			}
 		} else // (A > B && A > C) ie. x
 		{
-			Debug.Log("Case 3: y-z");
+			//Debug.Log("Case 3: y-z");
 			// Get zmin, zmax
 			posList.Sort(SortByZ);
 			int zmin = posList[0].z;
 			int zmax = posList[posList.Count-1].z;
-			Debug.Log("zmin: " + zmin);
-			Debug.Log("zmax: " + zmax);
+			//Debug.Log("zmin: " + zmin);
+			//Debug.Log("zmax: " + zmax);
 			
 			// For each z, get all points that intersect scan line
 			List<WorldPos> scanIntersection;
 			for (int z = zmin + 1; z < zmax; z++)
 			{
-				Debug.Log("z = " + z);
+				//Debug.Log("z = " + z);
 				scanIntersection = new List<WorldPos>();
 
                 // List of edge indices to ignore
@@ -573,7 +573,7 @@ public static class EditTerrain
                         else
                         {
                             // Keep only one
-                            Debug.Log("KEPT ONLY ONE");
+                            //Debug.Log("KEPT ONLY ONE");
                             ignoreEdgeIndices.Add(indexEdge1);
                         }
                     }
@@ -590,7 +590,7 @@ public static class EditTerrain
                             if (pos.z == z)
                             {
                                 scanIntersection.Add(pos);
-                                Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
+                                //Debug.Log("Added: " + pos.x + "," + pos.y + "," + pos.z);
                                 break; // only need one per edge
                             }
                         }
@@ -605,8 +605,8 @@ public static class EditTerrain
 				{
 					int ymin = scanIntersection[2*i].y;
 					int ymax = scanIntersection[2*i + 1].y;
-					Debug.Log("ymin: " + ymin);
-					Debug.Log("ymax: " + ymax);
+					//Debug.Log("ymin: " + ymin);
+					//Debug.Log("ymax: " + ymax);
 					
 					for (int y = ymin + 1; y < ymax; y++)
 					{
@@ -618,7 +618,7 @@ public static class EditTerrain
 						{
 							chunk.world.SetBlock(Mathf.RoundToInt(x), y, z, block);
 							filledPosList.Add(new WorldPos(Mathf.RoundToInt(x), y, z));
-							Debug.Log("Placed: " + Mathf.RoundToInt(x) + "/" + x + "," + y + "," + z);
+							//Debug.Log("Placed: " + Mathf.RoundToInt(x) + "/" + x + "," + y + "," + z);
 						}
 					}
 				}
@@ -651,7 +651,7 @@ public static class EditTerrain
 	                                        List<WorldPos> vertexPosList2, List<List<WorldPos>> edgeList2, 
 	                                        RaycastHit lastHit, Block block)
 	{
-		Debug.Log("STARTING LOFT AND FILL");
+		//Debug.Log("STARTING LOFT AND FILL");
 		Chunk chunk = lastHit.collider.GetComponent<Chunk>();
 		if (chunk == null)
 			return new List<WorldPos>();
@@ -735,11 +735,11 @@ public static class EditTerrain
 
 		for (int i = 0; i < centeredList1.Count; i++)
 		{
-			Debug.Log("Vertex i = " + i);
-			Debug.Log("with position: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z + ",");
+			//Debug.Log("Vertex i = " + i);
+			//Debug.Log("with position: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z + ",");
 			int j = indexOfClosestVertex(centeredList1[i], centeredList2);
-			Debug.Log("j = " + j);
-			Debug.Log("with position: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z + ",");
+			//Debug.Log("j = " + j);
+			//Debug.Log("with position: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z + ",");
 				// Draw edge
 			List<WorldPos> currentEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j], lastHit, new BlockTemp());
 			filledPosList.AddRange(currentEdge);
@@ -748,7 +748,7 @@ public static class EditTerrain
 			{
 				if (j == previousVertex)
 				{
-					Debug.Log("j == previousVertex");
+					//Debug.Log("j == previousVertex");
 					// Draw triangle
 					//  Need 3 points, 3 edges in one list
 					Vector3 p1 = WorldPos.VectorFromWorldPos(vertices1[i]);
@@ -770,15 +770,15 @@ public static class EditTerrain
 					currentEdgeList.Add(currentEdge);
 					currentEdgeList.Add(previousEdge);
                     currentEdgeList.Add(edges1[i - 1]);
-                    Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                    Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
-                    Debug.Log("i-1: " + vertices1[i-1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                    Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
-                        currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
-                    Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
-                        previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
-                    Debug.Log("edges1[i - 1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
-                        edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
+                    //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                    //Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
+                    //Debug.Log("i-1: " + vertices1[i-1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                    //Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
+                    //    currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
+                    //Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
+                    //    previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
+                    //Debug.Log("edges1[i - 1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
+                    //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
                     List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 					filledPosList.AddRange(placedOnPlane);
@@ -787,7 +787,7 @@ public static class EditTerrain
 					// We'll handle wrapping around back to the beginning first
 					if (j == 0)
 					{
-						Debug.Log("In Wraparound case");
+						//Debug.Log("In Wraparound case");
 						// Handle it the same as the ambiguous case
 						// Just take previousVertex to 0
 						Vector3 p1 = WorldPos.VectorFromWorldPos(vertices1[i]);
@@ -797,12 +797,12 @@ public static class EditTerrain
 						// Compares distances
 						if (Vector3.Distance(p2, p3) < Vector3.Distance(p1, p4))
 						{
-							Debug.Log("0 Setting edge i-1=" + (i-1) + "->j=" + j);
+							//Debug.Log("0 Setting edge i-1=" + (i-1) + "->j=" + j);
 							// Set edge i-1 -> j
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 							
-							Debug.Log("1 Drawing triangle i-1=" + (i-1) + ", j=" + j +", previousVertex=" + (previousVertex));
+							//Debug.Log("1 Drawing triangle i-1=" + (i-1) + ", j=" + j +", previousVertex=" + (previousVertex));
 							// Draw the triangle i-1, j, j-1
 							Plane currentPlane = Plane.newPlaneWithPoints(p2, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -820,20 +820,20 @@ public static class EditTerrain
 							currentEdgeList.Add(diagonalEdge);
                             currentEdgeList.Add(edges2[previousVertex]);
                             currentEdgeList.Add(previousEdge);
-                            Debug.Log("i-1: " + vertices1[i-1].x + "," + vertices1[i-1].y + "," + vertices1[i-1].z);
-                            Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
-                            Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
-                                previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
-                            Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
-                                edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
+                            //Debug.Log("i-1: " + vertices1[i-1].x + "," + vertices1[i-1].y + "," + vertices1[i-1].z);
+                            //Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
+                            //Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
+                            //    previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
+                            //Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
+                            //    edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
 
                             List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
-							Debug.Log("2 Drawing triangle i-1=" + (i-1) + ", j=" + j +", i=" + (i));
+							//Debug.Log("2 Drawing triangle i-1=" + (i-1) + ", j=" + j +", i=" + (i));
 							// Draw the triangle i-1, j, i
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
 							currentPosList = new List<WorldPos>();
@@ -851,27 +851,27 @@ public static class EditTerrain
 							currentEdgeList.Add(diagonalEdge);
                             currentEdgeList.Add(currentEdge);
                             currentEdgeList.Add(edges1[i - 1]);
-                            Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                            Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
-                            Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
-                                currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
-                            Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
-                                edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
+                            //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                            //Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
+                            //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
+                            //    currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
+                            //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
+                            //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
                             placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 						} else
 						{
-							Debug.Log("3 Setting edge i=" + (i) + "->j-1=" + (j-1));
+							//Debug.Log("3 Setting edge i=" + (i) + "->j-1=" + (j-1));
 							// Set edge i -> j-1
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[previousVertex], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 							
-							Debug.Log("4 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", j=" + (j));
+							//Debug.Log("4 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", j=" + (j));
 							// Draw the triangle i, j-1, j
 							Plane currentPlane = Plane.newPlaneWithPoints(p1, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -889,20 +889,20 @@ public static class EditTerrain
 							currentEdgeList.Add(currentEdge);
                             currentEdgeList.Add(edges2[previousVertex]);
                             currentEdgeList.Add(diagonalEdge);
-                            Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                            Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
-                            Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
-                                currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
-                            Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
-                                edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
+                            //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                            //Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
+                            //Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
+                            //    currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
+                            //Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
+                            //    edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
 
                             List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
-							Debug.Log("5 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", i-1=" + (i-1));
+							//Debug.Log("5 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", i-1=" + (i-1));
 							// Draw the triangle i, j-1, i-1
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p4);
 							currentPosList = new List<WorldPos>();
@@ -920,15 +920,15 @@ public static class EditTerrain
 							currentEdgeList.Add(previousEdge);
 							currentEdgeList.Add(diagonalEdge);
                             currentEdgeList.Add(edges1[i - 1]);
-                            Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                            Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
-                            Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
-                                previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
-                            Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
-                                edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
+                            //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                            //Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
+                            //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
+                            //    previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
+                            //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
+                            //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
                             placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
@@ -938,9 +938,9 @@ public static class EditTerrain
 					// or more!
 					else if (Mathf.Abs(j - previousVertex) == 1)
 					{
-						Debug.Log("Entering the matrix");
+						//Debug.Log("Entering the matrix");
 						int jOffset = j - previousVertex; // Not always j-1 - because of =/- case
-						Debug.Log("jOffset = " + jOffset);
+						//Debug.Log("jOffset = " + jOffset);
 						// Here, just have to handle ambiguous case
 						// The ambiguous case is caused by both vertices incrementing at the same time
 						// This creates a quadrilateral, which we don't know how to shade
@@ -954,12 +954,12 @@ public static class EditTerrain
 						// Compares distances
 						if (Vector3.Distance(p2, p3) < Vector3.Distance(p1, p4))
 						{
-							Debug.Log("6 Setting edge i-1=" + (i-1) + "->j=" + (j));
+							//Debug.Log("6 Setting edge i-1=" + (i-1) + "->j=" + (j));
 							// Set edge i-1 -> j
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 
-							Debug.Log("7 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", j-jOffset=" + (j-jOffset));
+							//Debug.Log("7 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", j-jOffset=" + (j-jOffset));
 							// Draw the triangle i-1, j, j-1
 							Plane currentPlane = Plane.newPlaneWithPoints(p2, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -977,20 +977,20 @@ public static class EditTerrain
 							currentEdgeList.Add(diagonalEdge);
                             currentEdgeList.Add(edges2[j - jOffset]);
                             currentEdgeList.Add(previousEdge);
-                            Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                            Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
-                            Debug.Log("j - jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
-                                previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
-                            Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
-                                edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
+                            //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                            //Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
+                            //Debug.Log("j - jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
+                            //    previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
+                            //Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
+                            //    edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
 
                             List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
-							Debug.Log("8 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", i=" + (i));
+							//Debug.Log("8 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", i=" + (i));
 							// Draw the triangle i-1, j, i
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
 							currentPosList = new List<WorldPos>();
@@ -1008,27 +1008,27 @@ public static class EditTerrain
                             currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(currentEdge);
                             currentEdgeList.Add(edges1[i - 1]);
-                            Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                            Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
-                            Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
-                                currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
-                            Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
-                                edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
+                            //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                            //Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
+                            //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
+                            //    currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
+                            //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
+                            //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
                             placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 						} else
 						{
-							Debug.Log("9 Setting edge i=" + (i) + "->j-jOffset=" + (j-jOffset));
+							//Debug.Log("9 Setting edge i=" + (i) + "->j-jOffset=" + (j-jOffset));
 							// Set edge i -> j-1
 							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j-jOffset], lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 
-							Debug.Log("10 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", j=" + (j));
+							//Debug.Log("10 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", j=" + (j));
 							// Draw the triangle i, j-1, j
 							Plane currentPlane = Plane.newPlaneWithPoints(p1, p3, p4);
 							List<WorldPos> currentPosList = new List<WorldPos>();
@@ -1046,20 +1046,20 @@ public static class EditTerrain
 							currentEdgeList.Add(currentEdge);
                             currentEdgeList.Add(edges2[j - jOffset]);
                             currentEdgeList.Add(diagonalEdge);
-                            Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                            Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
-                            Debug.Log("j - jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
-                                currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
-                            Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
-                                edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
+                            //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                            //Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
+                            //Debug.Log("j - jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("currentEdge. first:" + currentEdge[0].x + "," + currentEdge[0].y + "," + currentEdge[0].z + ", last: " +
+                            //    currentEdge[currentEdge.Count - 1].x + "," + currentEdge[currentEdge.Count - 1].y + "," + currentEdge[currentEdge.Count - 1].z);
+                            //Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
+                            //    edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
 
                             List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
-							Debug.Log("11 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", i-1=" + (i-1));
+							//Debug.Log("11 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", i-1=" + (i-1));
 							// Draw the triangle i, j-1, i-1
 							currentPlane = Plane.newPlaneWithPoints(p1, p2, p4);
 							currentPosList = new List<WorldPos>();
@@ -1077,22 +1077,22 @@ public static class EditTerrain
 							currentEdgeList.Add(previousEdge);
 							currentEdgeList.Add(diagonalEdge);
                             currentEdgeList.Add(edges1[i - 1]);
-                            Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                            Debug.Log("j-jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
-                            Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                            Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                            Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
-                                previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
-                            Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
-                                edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
+                            //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                            //Debug.Log("j-jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
+                            //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                            //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                            //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                            //Debug.Log("previousEdge. first:" + previousEdge[0].x + "," + previousEdge[0].y + "," + previousEdge[0].z + ", last: " +
+                            //    previousEdge[previousEdge.Count - 1].x + "," + previousEdge[previousEdge.Count - 1].y + "," + previousEdge[previousEdge.Count - 1].z);
+                            //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
+                            //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
                             placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 						}
 					} else 
 					{
-						Debug.Log("THE TOUGH CASE");
+						//Debug.Log("THE TOUGH CASE");
 
 						// Gives the sign of the j movement - not necessarily j-1
 						int jSign = (j - previousVertex)/Mathf.Abs(j - previousVertex);
@@ -1102,7 +1102,7 @@ public static class EditTerrain
 						bool ambiguousCaseHandled = false;
 						for (int tempj = previousVertex + jSign; tempj != j; tempj = tempj + jSign)
 						{
-							Debug.Log("tempj = " + tempj);
+							//Debug.Log("tempj = " + tempj);
 							List<WorldPos> currentInnerEdge = new List<WorldPos>();
 							// for each of these vertices, check which between vertex i and i-1 is closer, draw edge
 							float distance1 = Vector3.Distance(WorldPos.VectorFromWorldPos(vertices2[tempj]), WorldPos.VectorFromWorldPos(vertices1[i-1]));
@@ -1133,15 +1133,15 @@ public static class EditTerrain
                                 currentEdgeList.Add(currentInnerEdge);
                                 currentEdgeList.Add(edges2[tempj - jSign]);
 								currentEdgeList.Add(previousInnerEdge);
-                                Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                                Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
-                                Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
-                                Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
-                                    currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
-                                Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
-                                    previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
-                                Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
-                                    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
+                                //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                                //Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
+                                //Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
+                                //Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
+                                //    currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
+                                //Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
+                                //    previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
+                                //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
+                                //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
                                 List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 								filledPosList.AddRange(placedOnPlane);
@@ -1180,15 +1180,15 @@ public static class EditTerrain
 									currentEdgeList.Add(diagonalEdge);
                                     currentEdgeList.Add(edges2[tempj - jSign]);
                                     currentEdgeList.Add(previousInnerEdge);
-                                    Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                                    Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
-                                    Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
-                                    Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
-                                        currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
-                                    Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
-                                        previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
-                                    Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
-                                        edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
+                                    //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                                    //Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
+                                    //Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
+                                    //Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
+                                    //    currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
+                                    //Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
+                                    //    previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
+                                    //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
+                                    //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
                                     List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
@@ -1210,15 +1210,15 @@ public static class EditTerrain
                                     currentEdgeList.Add(diagonalEdge);
 									currentEdgeList.Add(currentInnerEdge);
                                     currentEdgeList.Add(edges1[i - 1]);
-                                    Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                                    Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
-                                    Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                                    Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
-                                        currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
-                                    Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                        diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                                    Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
-                                        edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
+                                    //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                                    //Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
+                                    //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                                    //Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
+                                    //    currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
+                                    //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                                    //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                                    //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
+                                    //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
                                     placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
@@ -1246,15 +1246,15 @@ public static class EditTerrain
                                     currentEdgeList.Add(currentInnerEdge);
                                     currentEdgeList.Add(edges2[tempj - jSign]);
 									currentEdgeList.Add(diagonalEdge);
-                                    Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                                    Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
-                                    Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
-                                    Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
-                                        currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
-                                    Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                        diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                                    Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
-                                        edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
+                                    //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                                    //Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
+                                    //Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
+                                    //Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
+                                    //    currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
+                                    //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                                    //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                                    //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
+                                    //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
                                     List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
@@ -1276,15 +1276,15 @@ public static class EditTerrain
 									currentEdgeList.Add(previousInnerEdge);
 									currentEdgeList.Add(diagonalEdge);
                                     currentEdgeList.Add(edges1[i - 1]);
-                                    Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
-                                    Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
-                                    Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                                    Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
-                                        previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
-                                    Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
-                                        diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
-                                    Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
-                                        edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
+                                    //Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
+                                    //Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
+                                    //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                                    //Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
+                                    //    previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
+                                    //Debug.Log("diagonalEdge. first:" + diagonalEdge[0].x + "," + diagonalEdge[0].y + "," + diagonalEdge[0].z + ", last: " +
+                                    //    diagonalEdge[diagonalEdge.Count - 1].x + "," + diagonalEdge[diagonalEdge.Count - 1].y + "," + diagonalEdge[diagonalEdge.Count - 1].z);
+                                    //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
+                                    //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
                                     placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
@@ -1316,15 +1316,15 @@ public static class EditTerrain
                                 currentEdgeList.Add(currentInnerEdge);
                                 currentEdgeList.Add(edges2[tempj - jSign]);
 								currentEdgeList.Add(previousInnerEdge);
-                                Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
-                                Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
-                                Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
-                                Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
-                                    currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
-                                Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
-                                    previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
-                                Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
-                                    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
+                                //Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
+                                //Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
+                                //Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
+                                //Debug.Log("currentInnerEdge. first:" + currentInnerEdge[0].x + "," + currentInnerEdge[0].y + "," + currentInnerEdge[0].z + ", last: " +
+                                //    currentInnerEdge[currentInnerEdge.Count - 1].x + "," + currentInnerEdge[currentInnerEdge.Count - 1].y + "," + currentInnerEdge[currentInnerEdge.Count - 1].z);
+                                //Debug.Log("previousInnerEdge. first:" + previousInnerEdge[0].x + "," + previousInnerEdge[0].y + "," + previousInnerEdge[0].z + ", last: " +
+                                //    previousInnerEdge[previousInnerEdge.Count - 1].x + "," + previousInnerEdge[previousInnerEdge.Count - 1].y + "," + previousInnerEdge[previousInnerEdge.Count - 1].z);
+                                //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
+                                //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
                                 List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 								filledPosList.AddRange(placedOnPlane);
