@@ -147,13 +147,13 @@ public static class EditTerrain
         for (int i = 0; i < N; i++)
         {
             tempPos = tempPos + step;
+            posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
 
             // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
             Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
             if (tempBlock is BlockAir)
             {
                 chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
-                posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
             }
         }
 
@@ -195,13 +195,13 @@ public static class EditTerrain
         for (int i = 0; i < N; i++)
         {
             tempPos = tempPos + step;
+            posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
 
             // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
             Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
             if (tempBlock is BlockAir)
             {
                 chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
-                posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
             }
         }
 
@@ -767,9 +767,9 @@ public static class EditTerrain
                     currentVertexPosList.Add(vertices2[j]);
                     currentVertexPosList.Add(vertices1[i - 1]);
                     List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-					currentEdgeList.Add(edges1[i - 1]);
 					currentEdgeList.Add(currentEdge);
 					currentEdgeList.Add(previousEdge);
+                    currentEdgeList.Add(edges1[i - 1]);
                     Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
                     Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
                     Debug.Log("i-1: " + vertices1[i-1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
@@ -817,9 +817,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[j]);
                             currentVertexPosList.Add(vertices2[previousVertex]);
                             List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges2[previousVertex]);
 							currentEdgeList.Add(diagonalEdge);
-							currentEdgeList.Add(previousEdge);
+                            currentEdgeList.Add(edges2[previousVertex]);
+                            currentEdgeList.Add(previousEdge);
                             Debug.Log("i-1: " + vertices1[i-1].x + "," + vertices1[i-1].y + "," + vertices1[i-1].z);
                             Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
                             Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
@@ -848,9 +848,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[j]);
                             currentVertexPosList.Add(vertices1[i]);
                             currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges1[i-1]);
-							currentEdgeList.Add(currentEdge);
 							currentEdgeList.Add(diagonalEdge);
+                            currentEdgeList.Add(currentEdge);
+                            currentEdgeList.Add(edges1[i - 1]);
                             Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                             Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
                             Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
@@ -886,9 +886,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[j]);
                             currentVertexPosList.Add(vertices2[previousVertex]);
                             List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges2[previousVertex]);
-							currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(currentEdge);
+                            currentEdgeList.Add(edges2[previousVertex]);
+                            currentEdgeList.Add(diagonalEdge);
                             Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
                             Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
                             Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
@@ -917,9 +917,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[previousVertex]);
                             currentVertexPosList.Add(vertices1[i]);
                             currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges1[i-1]);
 							currentEdgeList.Add(previousEdge);
 							currentEdgeList.Add(diagonalEdge);
+                            currentEdgeList.Add(edges1[i - 1]);
                             Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                             Debug.Log("previousVertex: " + vertices2[previousVertex].x + "," + vertices2[previousVertex].y + "," + vertices2[previousVertex].z);
                             Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
@@ -974,9 +974,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[j]);
                             currentVertexPosList.Add(vertices2[j - jOffset]);
                             List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges2[j - jOffset]);
 							currentEdgeList.Add(diagonalEdge);
-							currentEdgeList.Add(previousEdge);
+                            currentEdgeList.Add(edges2[j - jOffset]);
+                            currentEdgeList.Add(previousEdge);
                             Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                             Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
                             Debug.Log("j - jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
@@ -1005,9 +1005,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[j]);
                             currentVertexPosList.Add(vertices1[i]);
                             currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges1[i-1]);
+                            currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(currentEdge);
-							currentEdgeList.Add(diagonalEdge);
+                            currentEdgeList.Add(edges1[i - 1]);
                             Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                             Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
                             Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
@@ -1043,9 +1043,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[j]);
                             currentVertexPosList.Add(vertices2[j - jOffset]);
                             List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges2[j - jOffset]);
-							currentEdgeList.Add(diagonalEdge);
 							currentEdgeList.Add(currentEdge);
+                            currentEdgeList.Add(edges2[j - jOffset]);
+                            currentEdgeList.Add(diagonalEdge);
                             Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
                             Debug.Log("j: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z);
                             Debug.Log("j - jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
@@ -1074,9 +1074,9 @@ public static class EditTerrain
                             currentVertexPosList.Add(vertices2[j - jOffset]);
                             currentVertexPosList.Add(vertices1[i]);
                             currentEdgeList = new List<List<WorldPos>>();
-							currentEdgeList.Add(edges1[i-1]);
 							currentEdgeList.Add(previousEdge);
 							currentEdgeList.Add(diagonalEdge);
+                            currentEdgeList.Add(edges1[i - 1]);
                             Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                             Debug.Log("j-jOffset: " + vertices2[j - jOffset].x + "," + vertices2[j - jOffset].y + "," + vertices2[j - jOffset].z);
                             Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
@@ -1130,8 +1130,8 @@ public static class EditTerrain
                                 currentVertexPosList.Add(vertices2[tempj]);
                                 currentVertexPosList.Add(vertices2[tempj - jSign]);
                                 List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-								currentEdgeList.Add(edges2[tempj - jSign]);
-								currentEdgeList.Add(currentInnerEdge);
+                                currentEdgeList.Add(currentInnerEdge);
+                                currentEdgeList.Add(edges2[tempj - jSign]);
 								currentEdgeList.Add(previousInnerEdge);
                                 Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                                 Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
@@ -1177,9 +1177,9 @@ public static class EditTerrain
                                     currentVertexPosList.Add(vertices2[tempj]);
                                     currentVertexPosList.Add(vertices2[tempj - jSign]);
                                     List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-									currentEdgeList.Add(edges2[tempj - jSign]);
 									currentEdgeList.Add(diagonalEdge);
-									currentEdgeList.Add(previousInnerEdge);
+                                    currentEdgeList.Add(edges2[tempj - jSign]);
+                                    currentEdgeList.Add(previousInnerEdge);
                                     Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                                     Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
                                     Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
@@ -1207,9 +1207,9 @@ public static class EditTerrain
                                     currentVertexPosList.Add(vertices2[tempj]);
                                     currentVertexPosList.Add(vertices1[i]);
                                     currentEdgeList = new List<List<WorldPos>>();
-									currentEdgeList.Add(edges1[i-1]);
+                                    currentEdgeList.Add(diagonalEdge);
 									currentEdgeList.Add(currentInnerEdge);
-									currentEdgeList.Add(diagonalEdge);
+                                    currentEdgeList.Add(edges1[i - 1]);
                                     Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                                     Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
                                     Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
@@ -1243,9 +1243,9 @@ public static class EditTerrain
                                     currentVertexPosList.Add(vertices2[tempj]);
                                     currentVertexPosList.Add(vertices2[tempj - jSign]);
                                     List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-									currentEdgeList.Add(edges2[tempj - jSign]);
+                                    currentEdgeList.Add(currentInnerEdge);
+                                    currentEdgeList.Add(edges2[tempj - jSign]);
 									currentEdgeList.Add(diagonalEdge);
-									currentEdgeList.Add(currentInnerEdge);
                                     Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
                                     Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);
                                     Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
@@ -1273,9 +1273,9 @@ public static class EditTerrain
                                     currentVertexPosList.Add(vertices2[tempj - jSign]);
                                     currentVertexPosList.Add(vertices1[i]);
                                     currentEdgeList = new List<List<WorldPos>>();
-									currentEdgeList.Add(edges1[i-1]);
 									currentEdgeList.Add(previousInnerEdge);
 									currentEdgeList.Add(diagonalEdge);
+                                    currentEdgeList.Add(edges1[i - 1]);
                                     Debug.Log("i-1: " + vertices1[i - 1].x + "," + vertices1[i - 1].y + "," + vertices1[i - 1].z);
                                     Debug.Log("tempj - jSign: " + vertices2[tempj - jSign].x + "," + vertices2[tempj - jSign].y + "," + vertices2[tempj - jSign].z);
                                     Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
@@ -1313,8 +1313,8 @@ public static class EditTerrain
                                 currentVertexPosList.Add(vertices2[tempj]);
                                 currentVertexPosList.Add(vertices2[tempj - jSign]);
                                 List<List<WorldPos>> currentEdgeList = new List<List<WorldPos>>();
-								currentEdgeList.Add(edges2[tempj - jSign]);
-								currentEdgeList.Add(currentInnerEdge);
+                                currentEdgeList.Add(currentInnerEdge);
+                                currentEdgeList.Add(edges2[tempj - jSign]);
 								currentEdgeList.Add(previousInnerEdge);
                                 Debug.Log("i: " + vertices1[i].x + "," + vertices1[i].y + "," + vertices1[i].z);
                                 Debug.Log("tempj: " + vertices2[tempj].x + "," + vertices2[tempj].y + "," + vertices2[tempj].z);

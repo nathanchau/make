@@ -212,9 +212,11 @@ public class Modify : MonoBehaviour
 					// Draw edge back as well, so that we don't break loft algorithm
 					if (numVerticesOnCurrentPlane == 2)
 					{
-						List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
-						fillPosList.AddRange(placedPosList);
-						edgeList.Add(placedPosList);
+                        //List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
+                        //fillPosList.AddRange(placedPosList);
+                        //edgeList.Add(placedPosList);
+                        edgeList.Add(edgeList[edgeList.Count - 1]);
+                        fillPosList.AddRange(edgeList[edgeList.Count - 1]);
 					}
 					// Drawing bounding planes
                     // If 3 points placed so far
