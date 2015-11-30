@@ -184,6 +184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cursorCube: {fileID: 1924974205}
+  world: {fileID: 585039015}
   inPenMode: 0
 --- !u!1 &552193060
 GameObject:

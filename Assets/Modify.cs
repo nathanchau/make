@@ -9,6 +9,7 @@ using System.Linq;
 public class Modify : MonoBehaviour
 {
 	public GameObject cursorCube;
+	public World world;
 
     Vector2 rot;
 	private Vector3 point; //coordinate/point where the camera will look [ ]-Set to center of gravity
@@ -37,7 +38,7 @@ public class Modify : MonoBehaviour
 	List<List<WorldPos>> previousEdgeList = new List<List<WorldPos>>();
 	List<WorldPos> previousVertexPosList = new List<WorldPos>();
 	// For lofting planes
-	List<WorldPos> loftFillPosList = new List<WorldPos>(); // Lift of positions that have been added for all polygon fills for loft
+	List<WorldPos> loftFillPosList = new List<WorldPos>(); // List of positions that have been added for all polygon fills for loft
 
     void Start()
 	{
