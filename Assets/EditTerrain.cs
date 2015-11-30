@@ -137,7 +137,7 @@ public static class EditTerrain
 
         // Set first block
         // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-        Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
+        //Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
         //if (tempFirstBlock is BlockAir)
         //{
         chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
@@ -185,7 +185,7 @@ public static class EditTerrain
 
         // Set first block
         // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-        Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
+        //Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
         //if (tempFirstBlock is BlockAir)
         //{
         chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
@@ -720,7 +720,6 @@ public static class EditTerrain
 			vertices2.Add(firstPos);
 			vertices2.Reverse();
 
-			List<WorldPos> firstEdge = edges2[0];
             // The way that edges are reversed is different than vertices
 			edges2.Reverse();
 		}

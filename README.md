@@ -5,8 +5,10 @@ Make is a prototyping tool for virtual reality, built for artists.
 <img src="/Misc/progress.gif" width=400px>
 
 ## To do
-- [ ] Check fillposlist stuff
+- [x] Check fillposlist stuff
 - Organize
+- Still may want to organize it into multiple functions
+- [x] Fixed random plane problem I think - it was just a matter of moving the bulk of the pen mode code under the adjacentBlock check
 - Don't remove completing edges from it
 - [ ] Revisit algorithm
 - [ ] Fill in volume
