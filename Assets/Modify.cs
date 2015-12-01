@@ -96,7 +96,7 @@ public class Modify : MonoBehaviour
                 RaycastHit hit;
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
                 {
-                    EditTerrain.SetBlock(hit, new BlockAir());
+                    EditTerrain.SetBlock(hit, world, new BlockAir());
                 }
             }
             else if (Input.GetMouseButtonDown(0))
@@ -109,13 +109,13 @@ public class Modify : MonoBehaviour
                     lastHit = hit;
                     // Check to make sure that we're beside grass block
                     // This ensures that we add at max 1 layer painting
-                    if (EditTerrain.IsAdjacentBlockGrass(hit, true))
+                    if (EditTerrain.IsAdjacentBlockGrass(hit, world, true) || hit.collider.tag == "guide")
                     {
                         // Check to make sure the block we're setting is air
-                        Block block = EditTerrain.GetBlock(hit, true);
-                        if (block is BlockAir)
+                        Block block = EditTerrain.GetBlock(hit, world, true);
+                        if (block is BlockAir || block == null)
                         {
-                            WorldPos placedPos = EditTerrain.SetBlock(hit, new BlockTemp(), true);
+							WorldPos placedPos = EditTerrain.SetBlock(hit, world, new BlockTemp(), true);
                             posList.Add(placedPos);
                         }
                     }
@@ -137,16 +137,16 @@ public class Modify : MonoBehaviour
                     {
                         // Check to make sure that we're beside grass block
                         // This ensures that we add at max 1 layer painting
-                        if (EditTerrain.IsAdjacentBlockGrass(hit, true))
+                        if (EditTerrain.IsAdjacentBlockGrass(hit, world, true))
                         {
                             // Check to make sure the block we're setting is air
-                            Block block = EditTerrain.GetBlock(hit, true);
-                            if (block is BlockAir)
+                            Block block = EditTerrain.GetBlock(hit, world, true);
+                            if (block is BlockAir || block == null)
                             {
                                 // Instead of just setting block at current position, we want to set all blocks that
                                 //  we might have missed instead - so we interpolate between last position and current
                                 //  and set all blocks we intersected
-                                List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(lastHit, hit, new BlockTemp(), true);
+                                List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(lastHit, hit, world, new BlockTemp(), true);
                                 posList.AddRange(placedPosList);
                                 lastHit = hit;
                             }
@@ -161,11 +161,11 @@ public class Modify : MonoBehaviour
                 RaycastHit hit;
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
                 {
-                    EditTerrain.SetAllBlocksGivenPos(posList, hit, new BlockGrass());
+                    EditTerrain.SetAllBlocksGivenPos(world, posList, hit, new BlockGrass());
                 }
                 else
                 {
-                    EditTerrain.SetAllBlocksGivenPos(posList, lastHit, new BlockGrass());
+                    EditTerrain.SetAllBlocksGivenPos(world, posList, lastHit, new BlockGrass());
                 }
 
                 // Null out lastHit
@@ -185,16 +185,16 @@ public class Modify : MonoBehaviour
                 {
                     // Check to make sure that we're beside grass block
                     // This ensures that we add at max 1 layer painting
-                    if (EditTerrain.IsAdjacentBlockGrass(hit, true))
+                    if (EditTerrain.IsAdjacentBlockGrass(hit, world, true))
                     {
                         // Check to make sure the block we're setting is air
-                        Block block = EditTerrain.GetBlock(hit, true);
-                        if (block is BlockAir)
+                        Block block = EditTerrain.GetBlock(hit, world, true);
+                        if (block is BlockAir || block == null)
                         {
                             // Instead of just setting block at current position, we want to set all blocks 
                             //  between as well - so we interpolate between last position and current
                             //  and set all blocks we intersected
-                            List<WorldPos> placedEdgePosList = EditTerrain.SetAllBlocksBetween(lastHit, hit, new BlockTemp(), true);
+                            List<WorldPos> placedEdgePosList = EditTerrain.SetAllBlocksBetween(lastHit, hit, world, new BlockTemp(), true);
                             posList.AddRange(placedEdgePosList);
 
 							// Add to edgeList and vertexPosList
@@ -204,7 +204,7 @@ public class Modify : MonoBehaviour
                             else
                                 edgeList.Add(placedEdgePosList);
 
-                            vertexPosList.Add(placedEdgePosList[placedEdgePosList.Count - 1]);
+							vertexPosList.Add(placedEdgePosList[placedEdgePosList.Count - 1]);
 							//Debug.Log("z being placed: " + placedEdgePosList[placedEdgePosList.Count - 1].z);
                             lastHit = hit;
 
@@ -236,12 +236,12 @@ public class Modify : MonoBehaviour
 								
 								// Add new edge
 								// [ ] - Slight problem here - erases first block - add an optional variable to function
-								List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
+								List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, world, new BlockTemp(), true);
 								fillPosList.AddRange(placedPosList);
 								edgeList.Add(placedPosList);
 								
 								// Set blocks in the planar polygon
-								placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), vertexPosList, edgeList, currentPlane, hit, new BlockTemp());
+								placedPosList = EditTerrain.SetAllBlocksInPlane(world, posList.Concat(fillPosList).ToList(), vertexPosList, edgeList, currentPlane, hit, new BlockTemp());
 								fillPosList.AddRange(placedPosList);
 							}
 							// Else if >3 points placed so far, first have to check if new point is coplanar
@@ -254,19 +254,19 @@ public class Modify : MonoBehaviour
 								if (Plane.isCoplanar(currentPlane, currentPoint))
 								{
 									// Erase current fill
-									EditTerrain.SetAllBlocksGivenPos(fillPosList, hit, new BlockAir());
+									EditTerrain.SetAllBlocksGivenPos(world, fillPosList, hit, new BlockAir());
 									fillPosList = new List<WorldPos>();
 									
 									// Remove the previously inferred edge
 									edgeList.RemoveAt(edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
 									
 									// Add edge
-									List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, new BlockTemp(), true);
+									List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(hit, firstHitOnPlane, world, new BlockTemp(), true);
 									fillPosList.AddRange(placedPosList);
 									edgeList.Add(placedPosList);
 									
 									// Fill in the plane again
-									placedPosList = EditTerrain.SetAllBlocksInPlane(posList.Concat(fillPosList).ToList(), vertexPosList, edgeList, currentPlane, hit, new BlockTemp());
+									placedPosList = EditTerrain.SetAllBlocksInPlane(world, posList.Concat(fillPosList).ToList(), vertexPosList, edgeList, currentPlane, hit, new BlockTemp());
 									fillPosList.AddRange(placedPosList);
 								}
 								else {
@@ -302,9 +302,9 @@ public class Modify : MonoBehaviour
 							if (firstPlaneSet)
 							{
 								// Erase previous lofting plane
-								EditTerrain.SetAllBlocksGivenPos(loftFillPosList, hit, new BlockAir());
+								EditTerrain.SetAllBlocksGivenPos(world, loftFillPosList, hit, new BlockAir());
 								// Set new lofting plane
-								loftFillPosList = EditTerrain.LoftAndFillPlanes(previousVertexPosList, previousEdgeList, vertexPosList, edgeList, hit, new BlockTemp());
+								loftFillPosList = EditTerrain.LoftAndFillPlanes(previousVertexPosList, previousEdgeList, vertexPosList, edgeList, hit, world, new BlockTemp());
 							}
 						}
                     }
@@ -318,11 +318,11 @@ public class Modify : MonoBehaviour
                 RaycastHit hit;
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
                 {
-                    EditTerrain.SetAllBlocksGivenPos(posList, hit, new BlockGrass());
+                    EditTerrain.SetAllBlocksGivenPos(world, posList, hit, new BlockGrass());
                 }
                 else
                 {
-                    EditTerrain.SetAllBlocksGivenPos(posList, lastHit, new BlockGrass());
+                    EditTerrain.SetAllBlocksGivenPos(world, posList, lastHit, new BlockGrass());
                 }
 
 				// Reset everything

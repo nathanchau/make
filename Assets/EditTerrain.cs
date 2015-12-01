@@ -43,24 +43,27 @@ public static class EditTerrain
         return (float)pos;
     }
 
-    public static WorldPos SetBlock(RaycastHit hit, Block block, bool adjacent = false)
+    public static WorldPos SetBlock(RaycastHit hit, World world, Block block, bool adjacent = false)
     {
         Chunk chunk = hit.collider.GetComponent<Chunk>();
-        if (chunk == null)
-            return new WorldPos();
+        if (chunk == null && hit.collider.tag != "guide")
+		{
+			return new WorldPos();
+		}
 
         WorldPos pos = GetBlockPos(hit, adjacent);
-
-        chunk.world.SetBlock(pos.x, pos.y, pos.z, block);
+        world.SetBlock(pos.x, pos.y, pos.z, block);
 
         return pos;
     }
 
-    public static Block GetBlock(RaycastHit hit, bool adjacent = false)
+    public static Block GetBlock(RaycastHit hit, World world, bool adjacent = false)
     {
         Chunk chunk = hit.collider.GetComponent<Chunk>();
         if (chunk == null)
-            return null;
+		{
+			return null;
+		}
 
         WorldPos pos = GetBlockPos(hit, adjacent);
 
@@ -69,11 +72,17 @@ public static class EditTerrain
         return block;
     }
 
-    public static bool IsAdjacentBlockGrass(RaycastHit hit, bool adjacent = false)
+    public static bool IsAdjacentBlockGrass(RaycastHit hit, World world, bool adjacent = false)
     {
-        Chunk chunk = hit.collider.GetComponent<Chunk>();
+		// If you're hitting the guide plane, then you're going to set
+		if (hit.collider.tag == "guide")
+			return true;
+		
+		Chunk chunk = hit.collider.GetComponent<Chunk>();
         if (chunk == null)
-            return false;
+		{
+			return false;
+		}
 
         WorldPos pos = GetBlockPos(hit, adjacent);
 
@@ -95,13 +104,13 @@ public static class EditTerrain
     }
 
     // Sets all blocks between hit1 and hit2, inclusive hit1, inclusive hit2
-    public static List<WorldPos> SetAllBlocksBetween(RaycastHit hit1, RaycastHit hit2, Block block, bool adjacent = false)
+    public static List<WorldPos> SetAllBlocksBetween(RaycastHit hit1, RaycastHit hit2, World world, Block block, bool adjacent = false)
     {
         // If previous hit was defaulted out, then just setblock
         if (hit1.point == default(RaycastHit).point)
         {
             List<WorldPos> posList1 = new List<WorldPos>();
-            WorldPos tempPos1 = SetBlock(hit2, block, adjacent);
+            WorldPos tempPos1 = SetBlock(hit2, world, block, adjacent);
             posList1.Add(tempPos1);
             return posList1;
         }
@@ -113,7 +122,7 @@ public static class EditTerrain
         //  it's not handled - ie. if there's an unset chunk halfway between two hits, and you call this function
         //  then you'll try to set a block on an empty chunk - nothing bad will happen I don't think, it just won't work
         Chunk chunk = hit2.collider.GetComponent<Chunk>();
-        if (chunk == null)
+        if (chunk == null && hit2.collider.tag != "guide")
             return new List<WorldPos>();
 
         // Get endpoints
@@ -140,7 +149,7 @@ public static class EditTerrain
         //Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
         //if (tempFirstBlock is BlockAir)
         //{
-        chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+        world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
         posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
         //}
 
@@ -150,10 +159,10 @@ public static class EditTerrain
             posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
 
             // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-            Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
+            Block tempBlock = world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
             if (tempBlock is BlockAir)
             {
-                chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+                world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
             }
         }
 
@@ -164,10 +173,10 @@ public static class EditTerrain
     }
 
 	// Same as above, just using worldpos varibles for endpoints instead
-	public static List<WorldPos> SetAllBlocksBetweenPos(WorldPos pos1, WorldPos pos2, RaycastHit hit, Block block)
+	public static List<WorldPos> SetAllBlocksBetweenPos(WorldPos pos1, WorldPos pos2, World world, RaycastHit hit, Block block)
 	{
 		Chunk chunk = hit.collider.GetComponent<Chunk>();
-		if (chunk == null)
+		if (chunk == null && hit.collider.tag != "guide") // [ ] - not completely confident in this
 			return new List<WorldPos>();
 		
 		Vector3 p1 = WorldPos.VectorFromWorldPos(pos1);
@@ -188,7 +197,7 @@ public static class EditTerrain
         //Block tempFirstBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
         //if (tempFirstBlock is BlockAir)
         //{
-        chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+        world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
         posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
         //}
 
@@ -198,10 +207,10 @@ public static class EditTerrain
             posList.Add(new WorldPos(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z)));
 
             // Note: Have to check if replacing blockgrass or block air in this function - kind of inconsistent
-            Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
+            Block tempBlock = world.GetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z));
             if (tempBlock is BlockAir)
             {
-                chunk.world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
+                world.SetBlock(Mathf.RoundToInt(tempPos.x), Mathf.RoundToInt(tempPos.y), Mathf.RoundToInt(tempPos.z), block);
             }
         }
 
@@ -211,23 +220,23 @@ public static class EditTerrain
         return posList;
 	}
 	
-	public static bool SetAllBlocksGivenPos(List<WorldPos> posList, RaycastHit lastHit, Block block)
+	public static bool SetAllBlocksGivenPos(World world, List<WorldPos> posList, RaycastHit lastHit, Block block)
     {
         Chunk chunk = lastHit.collider.GetComponent<Chunk>();
-        if (chunk == null)
+        if (chunk == null && lastHit.collider.tag != "guide")
             return false;
 
         foreach (WorldPos pos in posList)
         {
-            chunk.world.SetBlock(pos.x, pos.y, pos.z, block);
+            world.SetBlock(pos.x, pos.y, pos.z, block);
         }
         return true;
     }
 
-	public static List<WorldPos> SetAllBlocksInPlane(List<WorldPos> posList, List<WorldPos> vertexPosList, List<List<WorldPos>> edgeList, Plane plane, RaycastHit lastHit, Block block)
+	public static List<WorldPos> SetAllBlocksInPlane(World world, List<WorldPos> posList, List<WorldPos> vertexPosList, List<List<WorldPos>> edgeList, Plane plane, RaycastHit lastHit, Block block)
 	{
 		Chunk chunk = lastHit.collider.GetComponent<Chunk>();
-		if (chunk == null)
+		if (chunk == null && lastHit.collider.tag != "guide")
 			return new List<WorldPos>();
 
 		List<WorldPos> filledPosList = new List<WorldPos>();
@@ -368,10 +377,10 @@ public static class EditTerrain
 						// Calculate the z-value
 						float z = -A/C*(float)x - B/C*(float)y - D/C;
 						// Place block
-						Block tempBlock = chunk.world.GetBlock(x, y, Mathf.RoundToInt(z));
+						Block tempBlock = world.GetBlock(x, y, Mathf.RoundToInt(z));
 						if (tempBlock is BlockAir)
 						{
-							chunk.world.SetBlock(x, y, Mathf.RoundToInt(z), block);
+							world.SetBlock(x, y, Mathf.RoundToInt(z), block);
 							filledPosList.Add(new WorldPos(x, y, Mathf.RoundToInt(z)));
 							//Debug.Log("Placed: " + x + "," + y + "," + z + "/" + Mathf.RoundToInt(z));
 						}
@@ -491,10 +500,10 @@ public static class EditTerrain
 						// Calculate the y-value
 						float y = -A/B*(float)x - C/B*(float)z - D/B;
 						// Place block
-						Block tempBlock = chunk.world.GetBlock(x, Mathf.RoundToInt(y), z);
+						Block tempBlock = world.GetBlock(x, Mathf.RoundToInt(y), z);
 						if (tempBlock is BlockAir)
 						{
-							chunk.world.SetBlock(x, Mathf.RoundToInt(y), z, block);
+							world.SetBlock(x, Mathf.RoundToInt(y), z, block);
 							filledPosList.Add(new WorldPos(x, Mathf.RoundToInt(y), z));
 							//Debug.Log("Placed: " + x + "," + y + "/" + Mathf.RoundToInt(y) + "," + z);
 						}
@@ -613,10 +622,10 @@ public static class EditTerrain
 						// Calculate the x-value
 						float x = -B/A*(float)y - C/A*(float)z - D/A;
 						// Place block
-						Block tempBlock = chunk.world.GetBlock(Mathf.RoundToInt(x), y, z);
+						Block tempBlock = world.GetBlock(Mathf.RoundToInt(x), y, z);
 						if (tempBlock is BlockAir)
 						{
-							chunk.world.SetBlock(Mathf.RoundToInt(x), y, z, block);
+							world.SetBlock(Mathf.RoundToInt(x), y, z, block);
 							filledPosList.Add(new WorldPos(Mathf.RoundToInt(x), y, z));
 							//Debug.Log("Placed: " + Mathf.RoundToInt(x) + "/" + x + "," + y + "," + z);
 						}
@@ -649,11 +658,11 @@ public static class EditTerrain
 
 	public static List<WorldPos> LoftAndFillPlanes(List<WorldPos> vertexPosList1, List<List<WorldPos>> edgeList1, 
 	                                        List<WorldPos> vertexPosList2, List<List<WorldPos>> edgeList2, 
-	                                        RaycastHit lastHit, Block block)
+	                                        RaycastHit lastHit, World world, Block block)
 	{
 		//Debug.Log("STARTING LOFT AND FILL");
 		Chunk chunk = lastHit.collider.GetComponent<Chunk>();
-		if (chunk == null)
+		if (chunk == null && lastHit.collider.tag != "guide")
 			return new List<WorldPos>();
 		
 		List<WorldPos> filledPosList = new List<WorldPos>();
@@ -740,7 +749,7 @@ public static class EditTerrain
 			//Debug.Log("j = " + j);
 			//Debug.Log("with position: " + vertices2[j].x + "," + vertices2[j].y + "," + vertices2[j].z + ",");
 				// Draw edge
-			List<WorldPos> currentEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j], lastHit, new BlockTemp());
+			List<WorldPos> currentEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j], world, lastHit, new BlockTemp());
 			filledPosList.AddRange(currentEdge);
 
 			if (i > 0) // Don't fill in triangles if it's the first edge
@@ -779,7 +788,7 @@ public static class EditTerrain
                     //Debug.Log("edges1[i - 1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                     //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 					filledPosList.AddRange(placedOnPlane);
 				} else {
 					// Might be ambiguous case, or might be switching back to the beginning
@@ -798,7 +807,7 @@ public static class EditTerrain
 						{
 							//Debug.Log("0 Setting edge i-1=" + (i-1) + "->j=" + j);
 							// Set edge i-1 -> j
-							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], lastHit, new BlockTemp());
+							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], world, lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 							
 							//Debug.Log("1 Drawing triangle i-1=" + (i-1) + ", j=" + j +", previousVertex=" + (previousVertex));
@@ -829,7 +838,7 @@ public static class EditTerrain
                             //Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
                             //    edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							//Debug.Log("2 Drawing triangle i-1=" + (i-1) + ", j=" + j +", i=" + (i));
@@ -860,14 +869,14 @@ public static class EditTerrain
                             //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                             //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 						} else
 						{
 							//Debug.Log("3 Setting edge i=" + (i) + "->j-1=" + (j-1));
 							// Set edge i -> j-1
-							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[previousVertex], lastHit, new BlockTemp());
+							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[previousVertex], world, lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 							
 							//Debug.Log("4 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", j=" + (j));
@@ -898,7 +907,7 @@ public static class EditTerrain
                             //Debug.Log("edges2[previousVertex]. first:" + edges2[previousVertex][0].x + "," + edges2[previousVertex][0].y + "," + edges2[previousVertex][0].z + ", last: " +
                             //    edges2[previousVertex][edges2[previousVertex].Count - 1].x + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].y + "," + edges2[previousVertex][edges2[previousVertex].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							//Debug.Log("5 Drawing triangle i=" + (i) + ", previousVertex=" + (previousVertex) +", i-1=" + (i-1));
@@ -929,7 +938,7 @@ public static class EditTerrain
                             //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                             //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 						}
 					}
@@ -955,7 +964,7 @@ public static class EditTerrain
 						{
 							//Debug.Log("6 Setting edge i-1=" + (i-1) + "->j=" + (j));
 							// Set edge i-1 -> j
-							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], lastHit, new BlockTemp());
+							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[j], world, lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 
 							//Debug.Log("7 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", j-jOffset=" + (j-jOffset));
@@ -986,7 +995,7 @@ public static class EditTerrain
                             //Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
                             //    edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							//Debug.Log("8 Drawing triangle i-1=" + (i-1) + ", j=" + (j) +", i=" + (i));
@@ -1017,14 +1026,14 @@ public static class EditTerrain
                             //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                             //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 						} else
 						{
 							//Debug.Log("9 Setting edge i=" + (i) + "->j-jOffset=" + (j-jOffset));
 							// Set edge i -> j-1
-							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j-jOffset], lastHit, new BlockTemp());
+							List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[j-jOffset], world, lastHit, new BlockTemp());
 							filledPosList.AddRange(diagonalEdge);
 
 							//Debug.Log("10 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", j=" + (j));
@@ -1055,7 +1064,7 @@ public static class EditTerrain
                             //Debug.Log("edges2[j - jOffset]. first:" + edges2[j - jOffset][0].x + "," + edges2[j - jOffset][0].y + "," + edges2[j - jOffset][0].z + ", last: " +
                             //    edges2[j - jOffset][edges2[j - jOffset].Count - 1].x + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].y + "," + edges2[j - jOffset][edges2[j - jOffset].Count - 1].z);
 
-                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 							
 							//Debug.Log("11 Drawing triangle i=" + (i) + ", j-jOffset=" + (j-jOffset) +", i-1=" + (i-1));
@@ -1086,7 +1095,7 @@ public static class EditTerrain
                             //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                             //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                            placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                            placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 							filledPosList.AddRange(placedOnPlane);
 						}
 					} else 
@@ -1109,7 +1118,7 @@ public static class EditTerrain
 							if (distance1 < distance2)
 							{
 								// Set edge tempj -> i-1
-								currentInnerEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[tempj], lastHit, new BlockTemp());
+								currentInnerEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[tempj], world, lastHit, new BlockTemp());
 								filledPosList.AddRange(currentInnerEdge);
 								
 								// Draw the triangle tempj-1, tempj, i-1
@@ -1142,7 +1151,7 @@ public static class EditTerrain
                                 //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                 //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 								filledPosList.AddRange(placedOnPlane);
 								
 							} else if (!ambiguousCaseHandled) {
@@ -1159,7 +1168,7 @@ public static class EditTerrain
 								if (Vector3.Distance(p2, p3) < Vector3.Distance(p1, p4))
 								{
 									// Set edge i-1 -> tempj
-									List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[tempj], lastHit, new BlockTemp());
+									List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i-1], vertices2[tempj], world, lastHit, new BlockTemp());
 									filledPosList.AddRange(diagonalEdge);
 
 									// Draw the triangle i-1, tempj, tempj-1
@@ -1189,7 +1198,7 @@ public static class EditTerrain
                                     //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                     //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 
 									// Draw the triangle i-1, tempj, i
@@ -1219,13 +1228,13 @@ public static class EditTerrain
                                     //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                     //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                                    placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 
 								} else
 								{
 									// Set edge i -> tempj-1
-									List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[tempj-jSign], lastHit, new BlockTemp());
+									List<WorldPos> diagonalEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[tempj-jSign], world, lastHit, new BlockTemp());
 									filledPosList.AddRange(diagonalEdge);
 
 									// Draw the triangle i, tempj-1, tempj
@@ -1255,7 +1264,7 @@ public static class EditTerrain
                                     //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                     //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 
 									// Draw the triangle i, tempj-1, i-1
@@ -1285,14 +1294,14 @@ public static class EditTerrain
                                     //Debug.Log("edges1[i-1]. first:" + edges1[i - 1][0].x + "," + edges1[i - 1][0].y + "," + edges1[i - 1][0].z + ", last: " +
                                     //    edges1[i - 1][edges1[i - 1].Count - 1].x + "," + edges1[i - 1][edges1[i - 1].Count - 1].y + "," + edges1[i - 1][edges1[i - 1].Count - 1].z);
 
-                                    placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                                    placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 									filledPosList.AddRange(placedOnPlane);
 								}
 
 								ambiguousCaseHandled = true;
 							} else {
 								// Set edge tempj -> i
-								currentInnerEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[tempj], lastHit, new BlockTemp());
+								currentInnerEdge = SetAllBlocksBetweenPos(vertices1[i], vertices2[tempj], world, lastHit, new BlockTemp());
 								filledPosList.AddRange(currentInnerEdge);
 								
 								// Draw the triangle tempj-1, tempj, i
@@ -1325,7 +1334,7 @@ public static class EditTerrain
                                 //Debug.Log("edges2[tempj - jSign]. first:" + edges2[tempj - jSign][0].x + "," + edges2[tempj - jSign][0].y + "," + edges2[tempj - jSign][0].z + ", last: " +
                                 //    edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].x + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].y + "," + edges2[tempj - jSign][edges2[tempj - jSign].Count - 1].z);
 
-                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
+                                List<WorldPos> placedOnPlane = SetAllBlocksInPlane(world, currentPosList, currentVertexPosList, currentEdgeList, currentPlane, lastHit, block);
 								filledPosList.AddRange(placedOnPlane);
 								
 							}
