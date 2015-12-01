@@ -9,12 +9,16 @@ using System.Linq;
 public class Modify : MonoBehaviour
 {
 	public GameObject cursorCube;
+	public GameObject guidePlane;
 	public World world;
 
     Vector2 rot;
 	private Vector3 point; //coordinate/point where the camera will look [ ]-Set to center of gravity
 	WorldPos cursorPos;
-	
+
+	// Variable to keep track of guide plane rotation
+	private int guidePlaneConfig = 0;
+
     // Set of variables for click, hold, drag painting of blocks
     private const float clickHoldDuration = 0.1f;
     private float lastClickTime;
@@ -87,6 +91,35 @@ public class Modify : MonoBehaviour
 		if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out cursorHit, 200)) {
 			cursorPos = EditTerrain.GetBlockPos(cursorHit, true);
 			cursorCube.transform.position = new Vector3(cursorPos.x, cursorPos.y, cursorPos.z);
+		}
+
+		// Guide Plane
+		// If button is pressed down, then move plane around
+		if (Input.GetKey(KeyCode.Z))
+		{
+			if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out cursorHit, 200)) {
+				cursorPos = EditTerrain.GetBlockPos(cursorHit, true);
+				guidePlane.transform.position = new Vector3(cursorPos.x, cursorPos.y, cursorPos.z);
+			}
+		}
+		// Cycle through configurations of guide plane
+		if (Input.GetKeyDown(KeyCode.X))
+		{
+			if (guidePlaneConfig == 0)
+			{
+				guidePlane.transform.rotation = Quaternion.Euler(90, 0, 0);
+				guidePlaneConfig++;
+			}
+			else if (guidePlaneConfig == 1)
+			{
+				guidePlane.transform.rotation = Quaternion.Euler(0, 0, 90);
+				guidePlaneConfig++;
+			}
+			else if (guidePlaneConfig == 2)
+			{
+				guidePlane.transform.rotation = Quaternion.Euler(0, 0, 0);
+				guidePlaneConfig = 0;
+			}
 		}
 
         if (!inPenMode) // Free Paint Mode
