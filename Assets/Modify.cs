@@ -95,11 +95,25 @@ public class Modify : MonoBehaviour
 
 		// Guide Plane
 		// If button is pressed down, then move plane around
+		if (Input.GetKeyDown(KeyCode.Z))
+		{
+			Collider[] colChildren = guidePlane.GetComponentsInChildren<Collider>();
+			foreach (Collider collider in colChildren) {  
+				collider.enabled = false;
+			}
+		}
 		if (Input.GetKey(KeyCode.Z))
 		{
 			if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out cursorHit, 200)) {
 				cursorPos = EditTerrain.GetBlockPos(cursorHit, true);
 				guidePlane.transform.position = new Vector3(cursorPos.x, cursorPos.y, cursorPos.z);
+			}
+		}
+		if (Input.GetKeyUp(KeyCode.Z))
+		{
+			Collider[] colChildren = guidePlane.GetComponentsInChildren<Collider>();
+			foreach (Collider collider in colChildren) {  
+				collider.enabled = true;
 			}
 		}
 		// Cycle through configurations of guide plane
