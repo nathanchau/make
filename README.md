@@ -13,7 +13,7 @@ Make is a prototyping tool for virtual reality, built for artists.
 - [ ] Revisit algorithm
 - [ ] Fill in volume
 - Have to refactor this code at some point
-- [ ] Constrain to plane
+- [x] Constrain to plane
 
 ### Future
 - Done building for a bit -> interaction triggers, then painting and styling
