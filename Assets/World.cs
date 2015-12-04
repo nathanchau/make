@@ -24,13 +24,13 @@ public class World : MonoBehaviour {
                 for (int z = -1; z < 1; z++)
                 {
                     CreateChunk(x * 16, y * 16, z * 16);
-					for (int xi = 0; xi < 16; xi++)
-					{
-						for (int zi = 0; zi < 16; zi++)
-						{
-							SetBlock(x*16 + xi, y*16 + 15, z*16 + zi, new BlockGrass());
-						}
-					}
+//					for (int xi = 0; xi < 16; xi++)
+//					{
+//						for (int zi = 0; zi < 16; zi++)
+//						{
+//							SetBlock(x*16 + xi, y*16 + 15, z*16 + zi, new BlockGrass());
+//						}
+//					}
                 }
             }
         }

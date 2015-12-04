@@ -82,7 +82,12 @@ public class Modify : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             inPenMode = !inPenMode;
-        }
+			Renderer renderer = cursorCube.GetComponent<Renderer>();
+			if (inPenMode)
+				renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.1F, 0.643F));
+			else
+				renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.643F, 0.1F));
+		}
 
 		// Cursor
         // Continuously change cursor cube position to be at position where block would be placed

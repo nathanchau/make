@@ -14,7 +14,13 @@ Make is a prototyping tool for virtual reality, built for artists.
 - [ ] Fill in volume
 - Have to refactor this code at some point
 - [x] Constrain to plane
+- [ ] Think about Data Structures for Storage, Representation
+- [ ] Select Tool
 
+- [ ] Interaction - Mock up flow
+
+- [ ] Erase
+- [ ] Copy/Paste
 ### Future
 - Done building for a bit -> interaction triggers, then painting and styling
 - Stylistic fog - shader research, read william chyr's blog
