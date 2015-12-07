@@ -462,6 +462,7 @@ MonoBehaviour:
   cursorCube: {fileID: 1924974205}
   guidePlane: {fileID: 1291768014}
   world: {fileID: 585039015}
+  inspectorModify: {fileID: 1310489105}
   inPenMode: 0
 --- !u!114 &297876188
 MonoBehaviour:
@@ -1586,7 +1587,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1310489100}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: .382683456, z: 0, w: .923879504}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: .0500000007, y: .0500000007, z: .0500000007}
   m_Children:
@@ -1663,7 +1664,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db4cfc2342bce4a49a9b78756036d9ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 297876181}
+  mainCamera: {fileID: 297876185}
+  scaleFactor: 1
+  vertexPosList: []
 --- !u!1 &1401250046
 GameObject:
   m_ObjectHideFlags: 0

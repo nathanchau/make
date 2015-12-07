@@ -11,6 +11,7 @@ public class Modify : MonoBehaviour
 	public GameObject cursorCube;
 	public GameObject guidePlane;
 	public World world;
+	public InspectorModify inspectorModify;
 
     Vector2 rot;
 	private Vector3 point; //coordinate/point where the camera will look [ ]-Set to center of gravity
@@ -48,6 +49,7 @@ public class Modify : MonoBehaviour
 	{
 		point = new Vector3 (0.0f, 0.0f);
 		transform.LookAt (point);
+		inspectorModify.vertexPosList = vertexPosList;
 	}
 
     void Update()
@@ -392,6 +394,7 @@ public class Modify : MonoBehaviour
 				posList = new List<WorldPos>();
 				edgeList = new List<List<WorldPos>>();
 				vertexPosList = new List<WorldPos>();
+				inspectorModify.vertexPosList = vertexPosList;
 				fillPosList = new List<WorldPos>();
 				loftFillPosList = new List<WorldPos>();
             }
