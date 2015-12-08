@@ -5,6 +5,10 @@ using System.Collections.Generic;
 public class InspectorModify : MonoBehaviour {
 
 	public Camera mainCamera;
+    public GameObject inspector;
+    public GameObject inspectorPlaceholder;
+
+    public bool isMinimized = true;
 
 	// Default scale for inspector
 	public const float defaultScale = 0.05f;
@@ -16,13 +20,36 @@ public class InspectorModify : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
+        isMinimized = true;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-		if (vertexPosList.Count > 0)
+        if (isMinimized)
+        {
+            CanvasGroup inspectorCanvasGroup = inspector.GetComponent<CanvasGroup>();
+            inspectorCanvasGroup.interactable = false;
+            inspectorCanvasGroup.blocksRaycasts = false;
+            inspectorCanvasGroup.alpha = 0;
+            CanvasGroup inspectorPlaceholderCanvasGroup = inspectorPlaceholder.GetComponent<CanvasGroup>();
+            inspectorPlaceholderCanvasGroup.interactable = true;
+            inspectorPlaceholderCanvasGroup.blocksRaycasts = true;
+            inspectorPlaceholderCanvasGroup.alpha = 1;
+        }
+        else
+        {
+            CanvasGroup inspectorCanvasGroup = inspector.GetComponent<CanvasGroup>();
+            inspectorCanvasGroup.interactable = true;
+            inspectorCanvasGroup.blocksRaycasts = true;
+            inspectorCanvasGroup.alpha = 1;
+            CanvasGroup inspectorPlaceholderCanvasGroup = inspectorPlaceholder.GetComponent<CanvasGroup>();
+            inspectorPlaceholderCanvasGroup.interactable = false;
+            inspectorPlaceholderCanvasGroup.blocksRaycasts = false;
+            inspectorPlaceholderCanvasGroup.alpha = 0;
+        }
+
+        if (vertexPosList.Count > 0)
 		{
 			// Position the inspector
 			// Depth should be middle depth of current object
@@ -49,7 +76,7 @@ public class InspectorModify : MonoBehaviour {
 			// screenPosRight gives the point at the far right side of the object in the center of mass
 			Vector3 screenPosRight = new Vector3(farRight, screenPosCenter.y, screenPosCenter.z);
 
-			scaleFactor = 1 + (screenPosRight.z - 30.0f) / 45.0f; // This was arrived at empirically
+			scaleFactor = 1 + (screenPosRight.z - 35.0f) / 35.0f; // This was arrived at empirically
 			scaleFactor = Mathf.Max(scaleFactor, 0.0f);
 
 			// Add a bit to get the position we want the inspector to be centered at
@@ -69,8 +96,12 @@ public class InspectorModify : MonoBehaviour {
 			// Make the inspector panel look at you
 			Vector3 lookPosition = mainCamera.transform.position;
 			// [ ] - 6 is a placeholder - make it just so that it's straight up and down
-			transform.LookAt(new Vector3(lookPosition.x, 6 + lookPosition.y/3.0f, lookPosition.z));
+			transform.LookAt(new Vector3(lookPosition.x, lookPosition.y/1.0f, lookPosition.z), mainCamera.transform.up);
 			transform.Rotate(new Vector3(0, 180, 0));
 		}
 	}
+    public void SetInspectorMinimized(bool newMinimized)
+    {
+        isMinimized = newMinimized;
+    }
 }
