@@ -99,6 +99,12 @@ public class InspectorModify : MonoBehaviour {
 			transform.LookAt(new Vector3(lookPosition.x, lookPosition.y/1.0f, lookPosition.z), mainCamera.transform.up);
 			transform.Rotate(new Vector3(0, 180, 0));
 		}
+		else
+		{
+			// Just minimize the inspector and send it far far away if not in use
+			isMinimized = true;
+			transform.position = new Vector3(10000, 10000, 10000);
+		}
 	}
     public void SetInspectorMinimized(bool newMinimized)
     {
