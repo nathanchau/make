@@ -266,9 +266,9 @@ public class Modify : MonoBehaviour
 							if (numVerticesOnCurrentPlane == 1)
 								firstHitOnPlane = hit;
 
-							// If 2 points so far
-							// Draw edge back as well, so that we don't break loft algorithm
-							if (numVerticesOnCurrentPlane == 2)
+                            // If 2 points so far
+                            // Draw edge back as well, so that we don't break loft algorithm
+                            if (numVerticesOnCurrentPlane == 2)
 							{
 								// Technically we've already drawn this exact edge, so we'll just add to the
 								//  edgeList. We also add to the fillPosList because this is an inferred edge
@@ -347,20 +347,30 @@ public class Modify : MonoBehaviour
 									edgeList = new List<List<WorldPos>>();
 								}
 							}
-							//foreach (List<WorldPos> edge in edgeList)
-							//{
-							//    Debug.Log("edgeList with #vertices= " + numVerticesOnCurrentPlane + " first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z + " count: " + edge.Count + " / last: " + edge[edge.Count - 1].x + "," + edge[edge.Count - 1].y + "," + edge[edge.Count - 1].z);
-							//}
-							
-							// Drawing lofting planes
-							if (firstPlaneSet)
+                            //foreach (List<WorldPos> edge in edgeList)
+                            //{
+                            //    Debug.Log("edgeList with #vertices= " + numVerticesOnCurrentPlane + " first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z + " count: " + edge.Count + " / last: " + edge[edge.Count - 1].x + "," + edge[edge.Count - 1].y + "," + edge[edge.Count - 1].z);
+                            //}
+
+                            // Drawing lofting planes
+                            if (firstPlaneSet)
 							{
 								// Erase previous lofting plane
 								EditTerrain.SetAllBlocksGivenPos(world, loftFillPosList, hit, new BlockAir());
 								// Set new lofting plane
 								loftFillPosList = EditTerrain.LoftAndFillPlanes(previousVertexPosList, previousEdgeList, vertexPosList, edgeList, hit, world, new BlockTemp());
 							}
-						}
+
+                            // Set vertices again so we get different coloured vertex
+                            foreach (WorldPos pos in vertexPosList)
+                            {
+                                EditTerrain.SetAllBlocksBetweenPos(pos, pos, world, hit, new BlockTempVertex());
+                            }
+                            foreach (WorldPos pos in previousVertexPosList)
+                            {
+                                EditTerrain.SetAllBlocksBetweenPos(pos, pos, world, hit, new BlockTempVertex());
+                            }
+                        }
                     }
                 }
             }

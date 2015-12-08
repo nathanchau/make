@@ -43,6 +43,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: e0345e90c163349a7b632aea347f34c6, type: 2}
   - {fileID: 2100000, guid: 5a5fb75e182a177419470b610fa34270, type: 2}
+  - {fileID: 2100000, guid: 5015804fc067c8f4a9f074dafcf01b72, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -102,16 +103,20 @@ Prefab:
     m_Modifications:
     - target: {fileID: 0}
       propertyPath: m_Materials.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 0}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: e0345e90c163349a7b632aea347f34c6, type: 2}
+      objectReference: {fileID: 2100000, guid: 5015804fc067c8f4a9f074dafcf01b72, type: 2}
     - target: {fileID: 0}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 2100000, guid: 5a5fb75e182a177419470b610fa34270, type: 2}
+      objectReference: {fileID: 2100000, guid: 5015804fc067c8f4a9f074dafcf01b72, type: 2}
+    - target: {fileID: 0}
+      propertyPath: m_Materials.Array.data[2]
+      value: 
+      objectReference: {fileID: 2100000, guid: 5015804fc067c8f4a9f074dafcf01b72, type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 100000}

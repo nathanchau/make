@@ -98,11 +98,12 @@ public class Chunk : MonoBehaviour
         filter.mesh.Clear();
         filter.mesh.vertices = meshData.vertices.ToArray();
         //filter.mesh.triangles = meshData.triangles.ToArray();
-        filter.mesh.subMeshCount = 2;
+        filter.mesh.subMeshCount = 3;
         //filter.mesh.triangles = meshData.triangles.ToArray();
 
         filter.mesh.SetTriangles(meshData.triangles.ToArray(), 0);
         filter.mesh.SetTriangles(meshData.tempTriangles.ToArray(), 1);
+        filter.mesh.SetTriangles(meshData.tempVertexTriangles.ToArray(), 2);
 
         filter.mesh.uv = meshData.uv.ToArray();
         filter.mesh.RecalculateNormals();
