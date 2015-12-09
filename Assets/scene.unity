@@ -95,6 +95,7 @@ GameObject:
   - 224: {fileID: 22427265}
   - 222: {fileID: 22427267}
   - 114: {fileID: 22427266}
+  - 114: {fileID: 22427268}
   m_Layer: 5
   m_Name: Code
   m_TagString: Untagged
@@ -114,10 +115,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1401250047}
   m_RootOrder: 4
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100, y: -120}
-  m_SizeDelta: {x: 160, y: 100}
+  m_AnchorMin: {x: .5, y: 1}
+  m_AnchorMax: {x: .5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -160}
+  m_SizeDelta: {x: 210, y: 180}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &22427266
 MonoBehaviour:
@@ -146,17 +147,76 @@ MonoBehaviour:
     m_MinSize: 10
     m_MaxSize: 40
     m_Alignment: 0
-    m_RichText: 1
+    m_RichText: 0
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "v1 = 23 35 156;\nv2 = 45 46 143; \nv3 = 87 12 25;"
+  m_Text: 
 --- !u!222 &22427267
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 22427264}
+--- !u!114 &22427268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 22427264}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 575553740, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: .960784316, g: .960784316, b: .960784316, a: 1}
+    m_PressedColor: {r: .784313738, g: .784313738, b: .784313738, a: 1}
+    m_DisabledColor: {r: .784313738, g: .784313738, b: .784313738, a: .501960814}
+    m_ColorMultiplier: 1
+    m_FadeDuration: .100000001
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 22427266}
+  m_TextComponent: {fileID: 22427266}
+  m_Placeholder: {fileID: 0}
+  m_ContentType: 0
+  m_InputType: 0
+  m_AsteriskChar: 42
+  m_KeyboardType: 0
+  m_LineType: 2
+  m_HideMobileInput: 0
+  m_CharacterValidation: 0
+  m_CharacterLimit: 0
+  m_EndEdit:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+SubmitEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_OnValueChange:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.InputField+OnChangeEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  m_SelectionColor: {r: .65882355, g: .807843149, b: 1, a: .752941191}
+  m_Text: 
+  m_CaretBlinkRate: .850000024
 --- !u!1 &24548420
 GameObject:
   m_ObjectHideFlags: 0
@@ -653,7 +713,7 @@ GameObject:
   - 33: {fileID: 494875945}
   - 64: {fileID: 494875944}
   - 23: {fileID: 494875943}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Guide Plane
   m_TagString: guide
   m_Icon: {fileID: 0}
@@ -974,7 +1034,7 @@ GameObject:
   - 33: {fileID: 627325216}
   - 64: {fileID: 627325215}
   - 23: {fileID: 627325214}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Guide Plane (1)
   m_TagString: guide
   m_Icon: {fileID: 0}
@@ -1946,7 +2006,7 @@ Canvas:
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: 799398209
   m_SortingOrder: 0
 --- !u!114 &1310489105
 MonoBehaviour:
@@ -2453,7 +2513,7 @@ GameObject:
   - 33: {fileID: 1705520440}
   - 64: {fileID: 1705520439}
   - 23: {fileID: 1705520438}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: highlight
   m_TagString: guide
   m_Icon: {fileID: 0}
