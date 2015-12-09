@@ -109,5 +109,7 @@ public class InspectorModify : MonoBehaviour {
     public void SetInspectorMinimized(bool newMinimized)
     {
         isMinimized = newMinimized;
+		// Deselect input field 
+		UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 }

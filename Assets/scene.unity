@@ -115,11 +115,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1401250047}
   m_RootOrder: 4
-  m_AnchorMin: {x: .5, y: 1}
-  m_AnchorMax: {x: .5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -160}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 20, y: -70}
   m_SizeDelta: {x: 210, y: 180}
-  m_Pivot: {x: .5, y: .5}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &22427266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -597,6 +597,7 @@ MonoBehaviour:
   inspectorModify: {fileID: 1310489105}
   penToolToggle: {fileID: 795444920}
   freePaintToggle: {fileID: 1880352653}
+  inInputField: 0
   inPenMode: 0
 --- !u!114 &297876188
 MonoBehaviour:

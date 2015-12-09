@@ -34,6 +34,8 @@ public class Modify : MonoBehaviour
     // List of positions of cubes that have been added
     List<WorldPos> posList = new List<WorldPos>();
 
+	public bool inInputField = false;
+
     // Pen Mode Variables
 	public bool inPenMode = false; // Two modes for drawing - pen mode, and free paint mode
 	bool isFirstPoint = true;
@@ -58,9 +60,21 @@ public class Modify : MonoBehaviour
 
     void Update()
     {
+		// Check for whether currently focusing an input field
+		// If that's the case, can't use keypresses for anything else
+		GameObject go = EventSystem.current.currentSelectedGameObject;
+		InputField inputField = null; //creating dummy, null, InputField component
+		if (go != null) 
+			inputField = go.GetComponent<InputField>(); //trying to get inputField component
+		//if inputField still equals null, it means user isn't in edit field
+		if (inputField == null) 
+			inInputField = false;
+		else
+			inInputField = true;
+
 		// Navigation 
-        // Reset to origin as center of orbit
-        if (Input.GetKeyDown(KeyCode.R))
+		// Reset to origin as center of orbit
+		if (Input.GetKeyDown(KeyCode.R) && !inInputField)
         {
             MoveCameraToPoint(new Vector3(0.0f, 0.0f, 0.0f));
         }
@@ -76,16 +90,19 @@ public class Modify : MonoBehaviour
             }
         }
 
-		// Zoom in and out
-		transform.position += transform.forward * Input.GetAxis ("Vertical"); // ZOOM IN
-		// Orbit the origin
-		transform.position += transform.up * Input.GetAxis ("Zoom"); // Strafe up and down
-		transform.position += transform.right * Input.GetAxis ("Horizontal"); // Strafe left and right
-		transform.LookAt (point);
+		if (!inInputField)
+		{
+			// Zoom in and out
+			transform.position += transform.forward * Input.GetAxis ("Vertical"); // ZOOM IN
+			// Orbit the origin
+			transform.position += transform.up * Input.GetAxis ("Zoom"); // Strafe up and down
+			transform.position += transform.right * Input.GetAxis ("Horizontal"); // Strafe left and right
+			transform.LookAt (point);
+		}
 
 		// Input Mode
         // Toggle between pen mode and free paint mode
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && !inInputField)
         {
             TogglePenMode();
         }
@@ -101,21 +118,22 @@ public class Modify : MonoBehaviour
 
 		// Guide Plane
 		// If button is pressed down, then move plane around
-		if (Input.GetKeyDown(KeyCode.Z))
+		// [ ] - Might be problems here if you start moving plane, then select an input field
+		if (Input.GetKeyDown(KeyCode.Z) && !inInputField)
 		{
 			Collider[] colChildren = guidePlane.GetComponentsInChildren<Collider>();
 			foreach (Collider collider in colChildren) {  
 				collider.enabled = false;
 			}
 		}
-		if (Input.GetKey(KeyCode.Z))
+		if (Input.GetKey(KeyCode.Z) && !inInputField)
 		{
 			if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out cursorHit, 200)) {
 				cursorPos = EditTerrain.GetBlockPos(cursorHit, true);
 				guidePlane.transform.position = new Vector3(cursorPos.x, cursorPos.y, cursorPos.z);
 			}
 		}
-		if (Input.GetKeyUp(KeyCode.Z))
+		if (Input.GetKeyUp(KeyCode.Z) && !inInputField)
 		{
 			Collider[] colChildren = guidePlane.GetComponentsInChildren<Collider>();
 			foreach (Collider collider in colChildren) {  
@@ -123,7 +141,7 @@ public class Modify : MonoBehaviour
 			}
 		}
 		// Cycle through configurations of guide plane
-		if (Input.GetKeyDown(KeyCode.X))
+		if (Input.GetKeyDown(KeyCode.X) && !inInputField)
 		{
 			if (guidePlaneConfig == 0)
 			{
@@ -408,6 +426,7 @@ public class Modify : MonoBehaviour
                     posList = new List<WorldPos>();
                     edgeList = new List<List<WorldPos>>();
                     vertexPosList = new List<WorldPos>();
+					previousVertexPosList = new List<WorldPos>();
                     inspectorModify.vertexPosList = vertexPosList;
                     fillPosList = new List<WorldPos>();
                     loftFillPosList = new List<WorldPos>();
