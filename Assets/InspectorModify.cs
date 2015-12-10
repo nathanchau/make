@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class InspectorModify : MonoBehaviour {
 
@@ -41,12 +42,19 @@ public class InspectorModify : MonoBehaviour {
             CanvasGroup inspectorCanvasGroup = inspector.GetComponent<CanvasGroup>();
             inspectorCanvasGroup.interactable = true;
             inspectorCanvasGroup.blocksRaycasts = true;
-            inspectorCanvasGroup.alpha = 1;
-            CanvasGroup inspectorPlaceholderCanvasGroup = inspectorPlaceholder.GetComponent<CanvasGroup>();
+            inspectorCanvasGroup.alpha = 0.75f;
+			if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject)
+			{
+				if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.tag == "inspector")
+					inspectorCanvasGroup.alpha = 1;
+			}
+			CanvasGroup inspectorPlaceholderCanvasGroup = inspectorPlaceholder.GetComponent<CanvasGroup>();
             inspectorPlaceholderCanvasGroup.interactable = false;
             inspectorPlaceholderCanvasGroup.blocksRaycasts = false;
             inspectorPlaceholderCanvasGroup.alpha = 0;
         }
+
+		rewriteInspectorCode();
 
         if (shape.vertices.Count > 0)
 		{
@@ -105,10 +113,27 @@ public class InspectorModify : MonoBehaviour {
 			transform.position = new Vector3(10000, 10000, 10000);
 		}
 	}
+
     public void SetInspectorMinimized(bool newMinimized)
     {
         isMinimized = newMinimized;
 		// Deselect input field 
 		UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
+
+	private void recalculateInspectorLayout()
+	{
+
+	}
+
+	private void rewriteInspectorCode()
+	{
+		string codeString = "";
+		InputField codeInputField = inspector.GetComponentInChildren<InputField>();
+		foreach (WorldPos pos in shape.vertices)
+		{
+			codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", shape.vertices.IndexOf(pos), pos.x, pos.y, pos.z);
+		}
+		codeInputField.text = codeString;
+	}
 }

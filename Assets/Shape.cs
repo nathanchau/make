@@ -15,8 +15,11 @@ public class Shape
 	// All vertices
 	public List<WorldPos> vertices = new List<WorldPos>();
 
+	// List of positions that don't change after every iteration
 	public List<WorldPos> posList = new List<WorldPos>();
+	// List of positions that change after every plane iteration
 	public List<WorldPos> fillPosList = new List<WorldPos>(); // List of positions that have been added for polygon fill
+
 	// For current plane
 	private Plane currentPlane = new Plane();
 	private List<List<WorldPos>> edgeList = new List<List<WorldPos>>(); // List of edges used for current polygon
@@ -24,9 +27,11 @@ public class Shape
 	// For previous plane
 	private List<List<WorldPos>> previousEdgeList = new List<List<WorldPos>>();
 	private List<WorldPos> previousVertexPosList = new List<WorldPos>();
-	// For lofting planes
+
+	// For lofting planes - changes with every loft
 	public List<WorldPos> loftFillPosList = new List<WorldPos>(); // List of positions that have been added for all polygon fills for loft
 
+	// RaycastHits
 	private RaycastHit hit = default(RaycastHit);
 	private RaycastHit lastHit = default(RaycastHit);
 	private RaycastHit firstHitOnPlane = default(RaycastHit);
