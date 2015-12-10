@@ -14,9 +14,8 @@ public class InspectorModify : MonoBehaviour {
 	public const float defaultScale = 0.05f;
 	public float scaleFactor = 1.0f;
 
-	// All edge blocks in current selection
-	//  This is used to calculate the position of inspector
-	public List<WorldPos> vertexPosList;
+	// The shape the inspector is describing
+	public Shape shape;
 
 	// Use this for initialization
 	void Start () {
@@ -49,7 +48,7 @@ public class InspectorModify : MonoBehaviour {
             inspectorPlaceholderCanvasGroup.alpha = 0;
         }
 
-        if (vertexPosList.Count > 0)
+        if (shape.vertices.Count > 0)
 		{
 			// Position the inspector
 			// Depth should be middle depth of current object
@@ -57,7 +56,7 @@ public class InspectorModify : MonoBehaviour {
 			
 			// Convert all block positions to screen space
 			List<Vector3> screenSpacePosList = new List<Vector3>();
-			foreach (WorldPos worldPos in vertexPosList)
+			foreach (WorldPos worldPos in shape.vertices)
 			{
 				Vector3 screenPos = mainCamera.WorldToScreenPoint(WorldPos.VectorFromWorldPos(worldPos));
 				screenSpacePosList.Add(screenPos);

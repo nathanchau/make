@@ -2025,7 +2025,6 @@ MonoBehaviour:
   inspectorPlaceholder: {fileID: 676628374}
   isMinimized: 0
   scaleFactor: 1
-  vertexPosList: []
 --- !u!1 &1401250046
 GameObject:
   m_ObjectHideFlags: 0

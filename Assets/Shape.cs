@@ -41,17 +41,7 @@ public class Shape
 		world = newWorld;
 		inPenMode = newInPenMode;
 	}
-
-//	public static Shape newShape(World newWorld, bool newInPenMode)
-//	{
-//
-//	}
-//
-//	public static Shape newShapeWithVertices(World newWorld, bool newInPenMode, List<WorldPos> vertices)
-//	{
-//
-//	}
-
+	
 	public static void addVertexWithHit(Shape shape, RaycastHit newHit)
 	{
 		shape.hit = newHit;

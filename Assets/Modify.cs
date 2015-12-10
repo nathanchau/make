@@ -43,7 +43,7 @@ public class Modify : MonoBehaviour
 		point = new Vector3 (0.0f, 0.0f);
 		transform.LookAt (point);
 		currentShape = new Shape(world, inPenMode);
-		inspectorModify.vertexPosList = currentShape.vertices;
+		inspectorModify.shape = currentShape;
 	}
 
     void Update()
@@ -259,6 +259,7 @@ public class Modify : MonoBehaviour
 									currentShape = new Shape(world, inPenMode);
 									Shape.addVertexWithHit(currentShape, hit);
 									isFirstPoint = false;
+									inspectorModify.shape = currentShape;
 								}
 								else
 									Shape.addVertexWithHit(currentShape, hit);
@@ -285,10 +286,11 @@ public class Modify : MonoBehaviour
                     // Reset everything
                     // Null out lastHit
                     lastHit = default(RaycastHit);
+					currentShape = new Shape(world, inPenMode);
+					inspectorModify.shape = currentShape;
 
                     // Reset first counters
                     isFirstPoint = true;
-                    inspectorModify.vertexPosList = currentShape.vertices;
                 }
 
             }
