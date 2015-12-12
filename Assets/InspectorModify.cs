@@ -224,4 +224,13 @@ public class InspectorModify : MonoBehaviour {
 				sectionModify.isMinimized = true;
 		}
 	}
+
+	public void destroyAllSections()
+	{
+		foreach (Button section in sections)
+		{
+			Destroy(section.gameObject);
+		}
+		sections = new List<Button>();
+	}
 }
