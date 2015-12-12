@@ -157,6 +157,25 @@ public class InspectorModify : MonoBehaviour {
             Text sectionTitle = section.GetComponentInChildren<Text>();
             if (sectionTitle)
                 sectionTitle.text = string.Format("plane {0}", i+1);
+            // Set text in text editor
+            Text sectionText = null;
+            Text[] sectionTexts = section.GetComponentsInChildren<Text>();
+            foreach (Text currentText in sectionTexts)
+            {
+                if (currentText.transform.tag == "inspector")
+                {
+                    sectionText = currentText;
+                    break;
+                }
+            }
+            string codeString = "";
+            foreach (WorldPos pos in shape.vertices[i])
+            {
+                codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", shape.vertices[i].IndexOf(pos), pos.x, pos.y, pos.z);
+            }
+            codeString += "\n";
+            if (sectionText)
+                sectionText.text = codeString;
             // Increment counter for next section's position
             InspectorSectionModify sectionModify = section.GetComponent<InspectorSectionModify>();
             if (sectionModify)
@@ -164,17 +183,11 @@ public class InspectorModify : MonoBehaviour {
                 if (sectionModify.isMinimized)
                     yval -= 31.0f;
                 else
-                    yval -= 230.0f;
+                {
+                    yval -= (31.0f + sectionText.rectTransform.rect.height);
+                    Debug.Log(sectionText.rectTransform.rect.height);
+                }
             }
-            // Set text in text editor
-            InputField sectionInputField = section.GetComponentInChildren<InputField>();
-            string codeString = "";
-            foreach (WorldPos pos in shape.vertices[i])
-            {
-                codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", shape.vertices[i].IndexOf(pos), pos.x, pos.y, pos.z);
-            }
-            if (sectionInputField)
-                sectionInputField.text = codeString;
         }
 
         // Change inspector size
@@ -184,22 +197,6 @@ public class InspectorModify : MonoBehaviour {
         inspectorHeight = Mathf.Min(inspectorHeight, 500.0f);
         inspector.rectTransform.sizeDelta = new Vector2(250.0f, inspectorHeight);
     }
-
-    private void rewriteInspectorCode()
-	{
-		string codeString = "";
-		InputField codeInputField = inspector.GetComponentInChildren<InputField>();
-		foreach (List<WorldPos> tempPosList in shape.vertices)
-		{
-            foreach(WorldPos pos in tempPosList)
-            {
-                codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", tempPosList.IndexOf(pos), pos.x, pos.y, pos.z);
-            }
-            codeString += string.Format("\n");
-        }
-        if (codeInputField)
-            codeInputField.text = codeString;
-	}
 
     private void setOnlySectionExpanded(int sectionIndex)
     {

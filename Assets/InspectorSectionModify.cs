@@ -7,7 +7,7 @@ public class InspectorSectionModify : MonoBehaviour {
     public Text sectionTitle;
     public Image chevron;
     public Image highlight;
-    public InputField textEditor;
+    public Text textEditor;
 
     public bool isMinimized = true;
 
