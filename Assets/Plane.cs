@@ -8,6 +8,13 @@ public class Plane
     public Vector3 normal;
     public float offset;
     
+	public List<WorldPos> vertexPosList = new List<WorldPos>(); // List of vertices used for current polygon
+	public List<List<WorldPos>> edgeList = new List<List<WorldPos>>(); // List of edges used for current polygon
+	public List<WorldPos> fillPosList = new List<WorldPos>(); // List of positions that have been added for polygon fill
+
+	// Loft from this plane to previous
+	public List<WorldPos> loftFillPosList = new List<WorldPos>(); // List of positions that have been added for all polygon fills for loft
+
     public Plane()
     {
 
@@ -27,6 +34,21 @@ public class Plane
         newPlane.offset = newOffset;
         return newPlane;
     }
+
+	public void calculatePlaneVariables()
+	{
+		Vector3 p1 = WorldPos.VectorFromWorldPos(vertexPosList[0]);
+		Vector3 p2 = WorldPos.VectorFromWorldPos(vertexPosList[1]);
+		Vector3 p3 = WorldPos.VectorFromWorldPos(vertexPosList[2]);
+		// Create 2 vectors
+		Vector3 v1 = p2 - p1;
+		Vector3 v2 = p3 - p1;
+		// Take the cross product
+		Vector3 crossProduct = Vector3.Cross(v1, v2).normalized;
+		normal = crossProduct;
+		// Find the offset by plugging p1 in
+		offset = -(crossProduct.x * p1.x + crossProduct.y * p1.y + crossProduct.z * p1.z);
+	}
 
     public static bool isCoplanar(Plane plane, Vector3 point)
     {

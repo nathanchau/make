@@ -17,19 +17,10 @@ public class Shape
 
 	// List of positions that don't change after every iteration
 	public List<WorldPos> posList = new List<WorldPos>();
-	// List of positions that change after every plane iteration
-	public List<WorldPos> fillPosList = new List<WorldPos>(); // List of positions that have been added for polygon fill
 
-	// For current plane
-	private Plane currentPlane = new Plane();
-	private List<List<WorldPos>> edgeList = new List<List<WorldPos>>(); // List of edges used for current polygon
-	private List<WorldPos> vertexPosList = new List<WorldPos>(); // List of vertices used for current polygon
-	// For previous plane
-	private List<List<WorldPos>> previousEdgeList = new List<List<WorldPos>>();
-	private List<WorldPos> previousVertexPosList = new List<WorldPos>();
-
-	// For lofting planes - changes with every loft
-	public List<WorldPos> loftFillPosList = new List<WorldPos>(); // List of positions that have been added for all polygon fills for loft
+	// List of planes
+	public List<Plane> planes = new List<Plane>();
+	public Plane currentPlane = new Plane();
 
 	// RaycastHits
 	private RaycastHit hit = default(RaycastHit);
@@ -68,11 +59,13 @@ public class Shape
         {
             shape.isFirstPoint = false;
             shape.vertices.Add(new List<WorldPos>());
+			shape.planes.Add(new Plane());
+			shape.currentPlane = shape.planes[shape.planes.Count - 1];
         }
         else
-			shape.edgeList.Add(placedEdgePosList);
+			shape.currentPlane.edgeList.Add(placedEdgePosList);
 		
-		shape.vertexPosList.Add(placedEdgePosList[placedEdgePosList.Count - 1]);
+		shape.currentPlane.vertexPosList.Add(placedEdgePosList[placedEdgePosList.Count - 1]);
 		shape.vertices[shape.vertices.Count - 1].Add(placedEdgePosList[placedEdgePosList.Count - 1]);
 		//Debug.Log("z being placed: " + placedEdgePosList[placedEdgePosList.Count - 1].z);
 		shape.lastHit = shape.hit;
@@ -87,31 +80,27 @@ public class Shape
 		{
 			// Technically we've already drawn this exact edge, so we'll just add to the
 			//  edgeList. We also add to the fillPosList because this is an inferred edge
-			shape.edgeList.Add(shape.edgeList[shape.edgeList.Count - 1]);
-			shape.fillPosList.AddRange(shape.edgeList[shape.edgeList.Count - 1]);
+			shape.currentPlane.edgeList.Add(shape.currentPlane.edgeList[shape.currentPlane.edgeList.Count - 1]);
+			shape.currentPlane.fillPosList.AddRange(shape.currentPlane.edgeList[shape.currentPlane.edgeList.Count - 1]);
 		}
 		// Drawing bounding planes
 		// If 3 points placed so far
 		else if (shape.numVerticesOnCurrentPlane == 3)
 		{
-			Vector3 p1 = WorldPos.VectorFromWorldPos(shape.vertexPosList[0]);
-			Vector3 p2 = WorldPos.VectorFromWorldPos(shape.vertexPosList[1]);
-			Vector3 p3 = WorldPos.VectorFromWorldPos(shape.vertexPosList[2]);
-			//Debug.Log(p1.z + "," + p2.z + "," + p3.z);
-			shape.currentPlane = Plane.newPlaneWithPoints(p1, p2, p3);
-			
+			shape.currentPlane.calculatePlaneVariables();
+
 			// Remove previously inferred edge
-			shape.edgeList.RemoveAt(shape.edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
+			shape.currentPlane.edgeList.RemoveAt(shape.currentPlane.edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
 			
 			// Add new edge
 			// [ ] - Slight problem here - erases first block - add an optional variable to function
 			List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(shape.hit, shape.firstHitOnPlane, shape.world, new BlockTemp(), true);
-			shape.fillPosList.AddRange(placedPosList);
-			shape.edgeList.Add(placedPosList);
+			shape.currentPlane.fillPosList.AddRange(placedPosList);
+			shape.currentPlane.edgeList.Add(placedPosList);
 			
 			// Set blocks in the planar polygon
-			placedPosList = EditTerrain.SetAllBlocksInPlane(shape.world, shape.posList.Concat(shape.fillPosList).ToList(), shape.vertexPosList, shape.edgeList, shape.currentPlane, shape.hit, new BlockTemp());
-			shape.fillPosList.AddRange(placedPosList);
+			placedPosList = EditTerrain.SetAllBlocksInPlane(shape.world, shape.posList.Concat(shape.currentPlane.fillPosList).ToList(), shape.currentPlane.vertexPosList, shape.currentPlane.edgeList, shape.currentPlane, shape.hit, new BlockTemp());
+			shape.currentPlane.fillPosList.AddRange(placedPosList);
 		}
 		// Else if >3 points placed so far, first have to check if new point is coplanar
 		//  If point is coplanar, then have to refill plane
@@ -119,51 +108,48 @@ public class Shape
 		else if (shape.numVerticesOnCurrentPlane > 3)
 		{
 			// Check if point is coplanar
-			Vector3 currentPoint = WorldPos.VectorFromWorldPos(shape.vertexPosList[shape.vertexPosList.Count - 1]);
+			Vector3 currentPoint = WorldPos.VectorFromWorldPos(shape.currentPlane.vertexPosList[shape.currentPlane.vertexPosList.Count - 1]);
 			if (Plane.isCoplanar(shape.currentPlane, currentPoint))
 			{
 				// Erase current fill
-				EditTerrain.SetAllBlocksGivenPos(shape.world, shape.fillPosList, shape.hit, new BlockAir());
-				shape.fillPosList = new List<WorldPos>();
+				EditTerrain.SetAllBlocksGivenPos(shape.world, shape.currentPlane.fillPosList, shape.hit, new BlockAir());
+				shape.currentPlane.fillPosList = new List<WorldPos>();
 				
 				// Remove the previously inferred edge
-				shape.edgeList.RemoveAt(shape.edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
+				shape.currentPlane.edgeList.RemoveAt(shape.currentPlane.edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
 				
 				// Add edge
 				List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(shape.hit, shape.firstHitOnPlane, shape.world, new BlockTemp(), true);
-				shape.fillPosList.AddRange(placedPosList);
-				shape.edgeList.Add(placedPosList);
+				shape.currentPlane.fillPosList.AddRange(placedPosList);
+				shape.currentPlane.edgeList.Add(placedPosList);
 				
 				// Fill in the plane again
-				placedPosList = EditTerrain.SetAllBlocksInPlane(shape.world, shape.posList.Concat(shape.fillPosList).ToList(), shape.vertexPosList, shape.edgeList, shape.currentPlane, shape.hit, new BlockTemp());
-				shape.fillPosList.AddRange(placedPosList);
+				placedPosList = EditTerrain.SetAllBlocksInPlane(shape.world, shape.posList.Concat(shape.currentPlane.fillPosList).ToList(), shape.currentPlane.vertexPosList, shape.currentPlane.edgeList, shape.currentPlane, shape.hit, new BlockTemp());
+				shape.currentPlane.fillPosList.AddRange(placedPosList);
 			}
 			else
 			{
 				// The first plane has been set
 				shape.firstPlaneSet = true;
 				
-				// Store previous plane info
-				shape.previousEdgeList = new List<List<WorldPos>>(shape.edgeList);
-				shape.previousEdgeList.RemoveAt(shape.previousEdgeList.Count - 1);
-				shape.previousVertexPosList = new List<WorldPos>(shape.vertexPosList);
-				shape.previousVertexPosList.RemoveAt(shape.previousVertexPosList.Count - 1);
 				//foreach (List<WorldPos> edge in previousEdgeList)
 				//{
 				//    Debug.Log("previousEdgeList first: " + edge[0].x + "," + edge[0].y + "," + edge[0].z + " count: " + edge.Count + " / last: " + edge[edge.Count - 1].x + "," + edge[edge.Count - 1].y + "," + edge[edge.Count - 1].z);
 				//}
 				
 				// Reset plane variables
-				shape.currentPlane = new Plane();
 				shape.numVerticesOnCurrentPlane = 1;
 				shape.firstHitOnPlane = shape.hit;
-				WorldPos tempPos = shape.vertexPosList[shape.vertexPosList.Count - 1];
-				shape.vertexPosList = new List<WorldPos>();
-				shape.vertexPosList.Add(tempPos);
+				WorldPos tempPos = shape.currentPlane.vertexPosList[shape.currentPlane.vertexPosList.Count - 1];
+				// Store previous plane info
+				shape.currentPlane.edgeList.RemoveAt(shape.currentPlane.edgeList.Count - 1);
+				shape.currentPlane.vertexPosList.RemoveAt(shape.currentPlane.vertexPosList.Count - 1);
+				shape.planes.Add(new Plane());
+				shape.currentPlane = shape.planes[shape.planes.Count - 1];
+				shape.currentPlane.vertexPosList.Add(tempPos);
                 shape.vertices[shape.vertices.Count - 1].RemoveAt(shape.vertices[shape.vertices.Count - 1].Count - 1);
                 shape.vertices.Add(new List<WorldPos>());
                 shape.vertices[shape.vertices.Count - 1].Add(tempPos);
-                shape.edgeList = new List<List<WorldPos>>();
 			}
 		}
 		//foreach (List<WorldPos> edge in edgeList)
@@ -175,19 +161,18 @@ public class Shape
 		if (shape.firstPlaneSet)
 		{
 			// Erase previous lofting plane
-			EditTerrain.SetAllBlocksGivenPos(shape.world, shape.loftFillPosList, shape.hit, new BlockAir());
+			EditTerrain.SetAllBlocksGivenPos(shape.world, shape.currentPlane.loftFillPosList, shape.hit, new BlockAir());
 			// Set new lofting plane
-			shape.loftFillPosList = EditTerrain.LoftAndFillPlanes(shape.previousVertexPosList, shape.previousEdgeList, shape.vertexPosList, shape.edgeList, shape.hit, shape.world, new BlockTemp());
+			shape.currentPlane.loftFillPosList = EditTerrain.LoftAndFillPlanes(shape.planes[shape.planes.Count - 2].vertexPosList, shape.planes[shape.planes.Count - 2].edgeList, shape.planes[shape.planes.Count - 1].vertexPosList, shape.planes[shape.planes.Count - 1].edgeList, shape.hit, shape.world, new BlockTemp());
 		}
 		
 		// Set vertices again so we get different coloured vertex
-		foreach (WorldPos pos in shape.vertexPosList)
+		foreach (Plane plane in shape.planes)
 		{
-			EditTerrain.SetAllBlocksBetweenPos(pos, pos, shape.world, shape.hit, new BlockTempVertex());
-		}
-		foreach (WorldPos pos in shape.previousVertexPosList)
-		{
-			EditTerrain.SetAllBlocksBetweenPos(pos, pos, shape.world, shape.hit, new BlockTempVertex());
+			foreach (WorldPos pos in plane.vertexPosList)
+			{
+				EditTerrain.SetAllBlocksBetweenPos(pos, pos, shape.world, shape.hit, new BlockTempVertex());
+			}
 		}
 	}
 }

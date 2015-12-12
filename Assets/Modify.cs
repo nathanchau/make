@@ -274,8 +274,11 @@ public class Modify : MonoBehaviour
                 { // Right Click
                   // Change all newly added blocks to the right block type
 					posList = new List<WorldPos>(currentShape.posList);
-                    posList.AddRange(currentShape.fillPosList);
-                    posList.AddRange(currentShape.loftFillPosList);
+					foreach (Plane plane in currentShape.planes)
+					{
+						posList.AddRange(plane.fillPosList);
+						posList.AddRange(plane.loftFillPosList);
+					}
                     RaycastHit hit;
                     if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
                     {
