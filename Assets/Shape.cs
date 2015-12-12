@@ -12,8 +12,8 @@ public class Shape
 	public World world;
 	public bool inPenMode = false; // Two modes for drawing - pen mode, and free paint mode
 
-	// All vertices
-	public List<WorldPos> vertices = new List<WorldPos>();
+	// All vertices, organized by plane
+	public List<List<WorldPos>> vertices = new List<List<WorldPos>>();
 
 	// List of positions that don't change after every iteration
 	public List<WorldPos> posList = new List<WorldPos>();
@@ -65,12 +65,15 @@ public class Shape
 		// Add to edgeList and vertexPosList
 		// If it's the first point being placed, it's going to try to set an edge from null to this point - don't let it
 		if (shape.isFirstPoint)
-			shape.isFirstPoint = false;
-		else
+        {
+            shape.isFirstPoint = false;
+            shape.vertices.Add(new List<WorldPos>());
+        }
+        else
 			shape.edgeList.Add(placedEdgePosList);
 		
 		shape.vertexPosList.Add(placedEdgePosList[placedEdgePosList.Count - 1]);
-		shape.vertices.Add(placedEdgePosList[placedEdgePosList.Count - 1]);
+		shape.vertices[shape.vertices.Count - 1].Add(placedEdgePosList[placedEdgePosList.Count - 1]);
 		//Debug.Log("z being placed: " + placedEdgePosList[placedEdgePosList.Count - 1].z);
 		shape.lastHit = shape.hit;
 		
@@ -157,7 +160,10 @@ public class Shape
 				WorldPos tempPos = shape.vertexPosList[shape.vertexPosList.Count - 1];
 				shape.vertexPosList = new List<WorldPos>();
 				shape.vertexPosList.Add(tempPos);
-				shape.edgeList = new List<List<WorldPos>>();
+                shape.vertices[shape.vertices.Count - 1].RemoveAt(shape.vertices[shape.vertices.Count - 1].Count - 1);
+                shape.vertices.Add(new List<WorldPos>());
+                shape.vertices[shape.vertices.Count - 1].Add(tempPos);
+                shape.edgeList = new List<List<WorldPos>>();
 			}
 		}
 		//foreach (List<WorldPos> edge in edgeList)

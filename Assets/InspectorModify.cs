@@ -6,8 +6,9 @@ using UnityEngine.UI;
 public class InspectorModify : MonoBehaviour {
 
 	public Camera mainCamera;
-    public GameObject inspector;
+    public Image inspector;
     public GameObject inspectorPlaceholder;
+    public Button inspectorSection;
 
     public bool isMinimized = true;
 
@@ -18,13 +19,17 @@ public class InspectorModify : MonoBehaviour {
 	// The shape the inspector is describing
 	public Shape shape;
 
+    // The list of sections in the inspector
+    private List<Button> sections = new List<Button>();
+
 	// Use this for initialization
 	void Start () {
         isMinimized = true;
-	}
-	
-	// Update is called once per frame
-	void Update () {
+        recalculateInspectorLayout();
+    }
+
+    // Update is called once per frame
+    void Update () {
 
         if (isMinimized)
         {
@@ -54,7 +59,7 @@ public class InspectorModify : MonoBehaviour {
             inspectorPlaceholderCanvasGroup.alpha = 0;
         }
 
-		rewriteInspectorCode();
+        //rewriteInspectorCode();
 
         if (shape.vertices.Count > 0)
 		{
@@ -64,11 +69,14 @@ public class InspectorModify : MonoBehaviour {
 			
 			// Convert all block positions to screen space
 			List<Vector3> screenSpacePosList = new List<Vector3>();
-			foreach (WorldPos worldPos in shape.vertices)
+			foreach (List<WorldPos> tempPosList in shape.vertices)
 			{
-				Vector3 screenPos = mainCamera.WorldToScreenPoint(WorldPos.VectorFromWorldPos(worldPos));
-				screenSpacePosList.Add(screenPos);
-			}
+                foreach (WorldPos worldPos in tempPosList)
+                {
+                    Vector3 screenPos = mainCamera.WorldToScreenPoint(WorldPos.VectorFromWorldPos(worldPos));
+                    screenSpacePosList.Add(screenPos);
+                }
+            }
 			// Find right-most and
 			// Find center of mass - we'll use this for the depth and y-axis value
 			Vector3 screenPosSum = new Vector3(0.0f, 0.0f, 0.0f);
@@ -119,21 +127,96 @@ public class InspectorModify : MonoBehaviour {
         isMinimized = newMinimized;
 		// Deselect input field 
 		UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+        recalculateInspectorLayout();
     }
 
-	private void recalculateInspectorLayout()
+	public void recalculateInspectorLayout()
 	{
+        float yval = 0.0f;
+        for (int i = 0; i < shape.vertices.Count; i++)
+        {
+            // Lazily instantiate a new inspector section
+            Button section;
+            if (i < sections.Count)
+                section = sections[i];
+            else
+            {
+                section = Instantiate(inspectorSection);
+                sections.Add(section);
+                section.transform.SetParent(inspector.transform);
+                section.transform.SetSiblingIndex(0);
+                InspectorSectionModify tempSectionModify = section.GetComponent<InspectorSectionModify>();
+                tempSectionModify.inspectorModify = this;
+            }
+            // Set position
+            RectTransform sectionTransform = section.GetComponent<RectTransform>();
+            sectionTransform.anchoredPosition3D = new Vector3(-125, yval, 0);
+            sectionTransform.localEulerAngles = new Vector3(0, 0, 0);
+            sectionTransform.localScale = new Vector3(1, 1, 1);
+            // Set title
+            Text sectionTitle = section.GetComponentInChildren<Text>();
+            if (sectionTitle)
+                sectionTitle.text = string.Format("plane {0}", i+1);
+            // Increment counter for next section's position
+            InspectorSectionModify sectionModify = section.GetComponent<InspectorSectionModify>();
+            if (sectionModify)
+            {
+                if (sectionModify.isMinimized)
+                    yval -= 31.0f;
+                else
+                    yval -= 230.0f;
+            }
+            // Set text in text editor
+            InputField sectionInputField = section.GetComponentInChildren<InputField>();
+            string codeString = "";
+            foreach (WorldPos pos in shape.vertices[i])
+            {
+                codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", shape.vertices[i].IndexOf(pos), pos.x, pos.y, pos.z);
+            }
+            if (sectionInputField)
+                sectionInputField.text = codeString;
+        }
 
-	}
+        // Change inspector size
+        float inspectorHeight = -yval + 40.0f;
+        //inspectorHeight = Mathf.Max(inspectorHeight, 120.0f);
+        // [ ] - Maybe change this eventually
+        inspectorHeight = Mathf.Min(inspectorHeight, 500.0f);
+        inspector.rectTransform.sizeDelta = new Vector2(250.0f, inspectorHeight);
+    }
 
-	private void rewriteInspectorCode()
+    private void rewriteInspectorCode()
 	{
 		string codeString = "";
 		InputField codeInputField = inspector.GetComponentInChildren<InputField>();
-		foreach (WorldPos pos in shape.vertices)
+		foreach (List<WorldPos> tempPosList in shape.vertices)
 		{
-			codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", shape.vertices.IndexOf(pos), pos.x, pos.y, pos.z);
-		}
-		codeInputField.text = codeString;
+            foreach(WorldPos pos in tempPosList)
+            {
+                codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", tempPosList.IndexOf(pos), pos.x, pos.y, pos.z);
+            }
+            codeString += string.Format("\n");
+        }
+        if (codeInputField)
+            codeInputField.text = codeString;
 	}
+
+    private void setOnlySectionExpanded(int sectionIndex)
+    {
+        for (int i = 0; i < sections.Count; i++)
+        {
+            if (i == sectionIndex)
+            {
+                InspectorSectionModify sectionModify = sections[i].GetComponent<InspectorSectionModify>();
+                if (sectionModify)
+                    sectionModify.isMinimized = false;
+            }
+            else
+            {
+                InspectorSectionModify sectionModify = sections[i].GetComponent<InspectorSectionModify>();
+                if (sectionModify)
+                    sectionModify.isMinimized = true;
+            }
+        }
+    }
 }

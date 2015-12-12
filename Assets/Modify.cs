@@ -263,6 +263,9 @@ public class Modify : MonoBehaviour
 								}
 								else
 									Shape.addVertexWithHit(currentShape, hit);
+
+                                // Recalculate the layout for inspector
+                                inspectorModify.recalculateInspectorLayout();
                             }
                         }
                     }
