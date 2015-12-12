@@ -47,12 +47,12 @@ public class InspectorModify : MonoBehaviour {
             CanvasGroup inspectorCanvasGroup = inspector.GetComponent<CanvasGroup>();
             inspectorCanvasGroup.interactable = true;
             inspectorCanvasGroup.blocksRaycasts = true;
-            inspectorCanvasGroup.alpha = 0.75f;
-			if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject)
-			{
-				if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.tag == "inspector")
-					inspectorCanvasGroup.alpha = 1;
-			}
+            inspectorCanvasGroup.alpha = 1;
+//			if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject)
+//			{
+//				if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.tag == "inspector")
+//					inspectorCanvasGroup.alpha = 1;
+//			}
 			CanvasGroup inspectorPlaceholderCanvasGroup = inspectorPlaceholder.GetComponent<CanvasGroup>();
             inspectorPlaceholderCanvasGroup.interactable = false;
             inspectorPlaceholderCanvasGroup.blocksRaycasts = false;
@@ -185,7 +185,6 @@ public class InspectorModify : MonoBehaviour {
                 else
                 {
                     yval -= (31.0f + sectionText.rectTransform.rect.height);
-                    Debug.Log(sectionText.rectTransform.rect.height);
                 }
             }
         }
@@ -216,4 +215,13 @@ public class InspectorModify : MonoBehaviour {
             }
         }
     }
+	public void minimizeAllSections()
+	{
+		foreach (Button section in sections)
+		{
+			InspectorSectionModify sectionModify = section.GetComponent<InspectorSectionModify>();
+			if (sectionModify)
+				sectionModify.isMinimized = true;
+		}
+	}
 }

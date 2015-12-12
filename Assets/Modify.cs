@@ -294,6 +294,9 @@ public class Modify : MonoBehaviour
 
                     // Reset first counters
                     isFirstPoint = true;
+
+					// Minimize all sections in inspector
+					inspectorModify.minimizeAllSections();
                 }
 
             }
