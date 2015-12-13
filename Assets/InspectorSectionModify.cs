@@ -64,4 +64,11 @@ public class InspectorSectionModify : MonoBehaviour {
         UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
         inspectorModify.recalculateInspectorLayout();
     }
+
+	public void setInspectorEditMode(bool newEditMode)
+	{
+		inspectorModify.setInspectorEditMode(newEditMode);
+		// [ ] Change this behaviour
+		UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+	}
 }

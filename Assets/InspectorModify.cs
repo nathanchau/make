@@ -7,10 +7,12 @@ public class InspectorModify : MonoBehaviour {
 
 	public Camera mainCamera;
     public Image inspector;
+	public Image inspectorEditor;
     public GameObject inspectorPlaceholder;
     public Button inspectorSection;
 
     public bool isMinimized = true;
+	public bool inEditMode = false;
 
 	// Default scale for inspector
 	public const float defaultScale = 0.05f;
@@ -37,17 +39,39 @@ public class InspectorModify : MonoBehaviour {
             inspectorCanvasGroup.interactable = false;
             inspectorCanvasGroup.blocksRaycasts = false;
             inspectorCanvasGroup.alpha = 0;
-            CanvasGroup inspectorPlaceholderCanvasGroup = inspectorPlaceholder.GetComponent<CanvasGroup>();
+			CanvasGroup inspectorEditorCanvasGroup = inspectorEditor.GetComponent<CanvasGroup>();
+			inspectorEditorCanvasGroup.interactable = false;
+			inspectorEditorCanvasGroup.blocksRaycasts = false;
+			inspectorEditorCanvasGroup.alpha = 0;
+			CanvasGroup inspectorPlaceholderCanvasGroup = inspectorPlaceholder.GetComponent<CanvasGroup>();
             inspectorPlaceholderCanvasGroup.interactable = true;
             inspectorPlaceholderCanvasGroup.blocksRaycasts = true;
             inspectorPlaceholderCanvasGroup.alpha = 1;
         }
         else
         {
-            CanvasGroup inspectorCanvasGroup = inspector.GetComponent<CanvasGroup>();
-            inspectorCanvasGroup.interactable = true;
-            inspectorCanvasGroup.blocksRaycasts = true;
-            inspectorCanvasGroup.alpha = 1;
+			if (inEditMode)
+			{
+				CanvasGroup inspectorCanvasGroup = inspector.GetComponent<CanvasGroup>();
+				inspectorCanvasGroup.interactable = false;
+				inspectorCanvasGroup.blocksRaycasts = false;
+				inspectorCanvasGroup.alpha = 0;
+				CanvasGroup inspectorEditorCanvasGroup = inspectorEditor.GetComponent<CanvasGroup>();
+				inspectorEditorCanvasGroup.interactable = true;
+				inspectorEditorCanvasGroup.blocksRaycasts = true;
+				inspectorEditorCanvasGroup.alpha = 1;
+			}
+			else
+			{
+				CanvasGroup inspectorCanvasGroup = inspector.GetComponent<CanvasGroup>();
+				inspectorCanvasGroup.interactable = true;
+				inspectorCanvasGroup.blocksRaycasts = true;
+				inspectorCanvasGroup.alpha = 1;
+				CanvasGroup inspectorEditorCanvasGroup = inspectorEditor.GetComponent<CanvasGroup>();
+				inspectorEditorCanvasGroup.interactable = false;
+				inspectorEditorCanvasGroup.blocksRaycasts = false;
+				inspectorEditorCanvasGroup.alpha = 0;
+			}
 //			if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject)
 //			{
 //				if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.tag == "inspector")
@@ -130,9 +154,16 @@ public class InspectorModify : MonoBehaviour {
         recalculateInspectorLayout();
     }
 
+	public void setInspectorEditMode(bool newEditMode)
+	{
+		inEditMode = newEditMode;
+		recalculateInspectorLayout();
+	}
+
 	public void recalculateInspectorLayout()
 	{
         float yval = 0.0f;
+		string largeCodeString = "";
         for (int i = 0; i < shape.vertices.Count; i++)
         {
             // Lazily instantiate a new inspector section
@@ -169,11 +200,14 @@ public class InspectorModify : MonoBehaviour {
                 }
             }
             string codeString = "";
+			largeCodeString += string.Format("# Plane {0}\n", i+1);
             foreach (WorldPos pos in shape.vertices[i])
             {
                 codeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", shape.vertices[i].IndexOf(pos), pos.x, pos.y, pos.z);
-            }
+				largeCodeString += string.Format("vertex{0} = ({1}, {2}, {3});\n", shape.vertices[i].IndexOf(pos), pos.x, pos.y, pos.z);
+			}
             codeString += "\n";
+			largeCodeString += "\n";
             if (sectionText)
                 sectionText.text = codeString;
             // Increment counter for next section's position
@@ -188,6 +222,12 @@ public class InspectorModify : MonoBehaviour {
                 }
             }
         }
+
+		InputField inspectorEditorInputField = inspectorEditor.GetComponentInChildren<InputField>();
+		if (inspectorEditorInputField)
+		{
+			inspectorEditorInputField.text = largeCodeString;
+		}
 
         // Change inspector size
         float inspectorHeight = -yval + 40.0f;
