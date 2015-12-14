@@ -9,7 +9,7 @@ public class ExpandingInputField : InputField {
 	protected override void Start() {
 		rectTransform = GetComponent<RectTransform>();
 		
-		onValueChange.AddListener(new UnityEngine.Events.UnityAction<string>(ResizeInput));
+		onValueChanged.AddListener(new UnityEngine.Events.UnityAction<string>(ResizeInput));
 	}
 	
 	// Resize input field as new lines get added

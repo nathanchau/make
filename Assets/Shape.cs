@@ -10,7 +10,7 @@ public class Shape
 
 	// Variables
 	public World world;
-	public bool inPenMode = false; // Two modes for drawing - pen mode, and free paint mode
+    public int mode;
 
 	// All vertices, organized by plane
 	public List<List<WorldPos>> vertices = new List<List<WorldPos>>();
@@ -32,11 +32,11 @@ public class Shape
 	private bool isFirstPoint = true;
 	private bool firstPlaneSet = false;
 
-	public Shape(World newWorld, bool newInPenMode) 
+	public Shape(World newWorld, int newMode) 
 	{
 		world = newWorld;
-		inPenMode = newInPenMode;
-	}
+        mode = newMode;
+    }
 	
 	public static void addVertexWithHit(Shape shape, RaycastHit newHit)
 	{

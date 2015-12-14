@@ -16,6 +16,14 @@ public class Modify : MonoBehaviour
 	public InspectorModify inspectorModify;
     public Toggle penToolToggle;
     public Toggle freePaintToggle;
+    public Toggle selectToggle;
+
+    // Modes
+    public int mode = 0;
+    private static int PAINTMODE = 0;
+    private static int PENMODE = 1;
+    private static int SELECTMODE = 2;
+    private static int INTERACTMODE = 3;
 
     Vector2 rot;
 	private Vector3 point; //coordinate/point where the camera will look [ ]-Set to center of gravity
@@ -32,7 +40,6 @@ public class Modify : MonoBehaviour
 	public bool inInputField = false;
 
     // Pen Mode Variables
-	public bool inPenMode = false; // Two modes for drawing - pen mode, and free paint mode
 	bool isFirstPoint = true;
 	public Shape currentShape;
 
@@ -42,8 +49,9 @@ public class Modify : MonoBehaviour
 	{
 		point = new Vector3 (0.0f, 0.0f);
 		transform.LookAt (point);
-		currentShape = new Shape(world, inPenMode);
+		currentShape = new Shape(world, mode);
 		inspectorModify.shape = currentShape;
+
 	}
 
     void Update()
@@ -92,7 +100,7 @@ public class Modify : MonoBehaviour
         // Toggle between pen mode and free paint mode
         if (Input.GetKeyDown(KeyCode.Space) && !inInputField)
         {
-            TogglePenMode();
+            ToggleMode();
         }
 
 		// Cursor
@@ -152,7 +160,7 @@ public class Modify : MonoBehaviour
         if (!EventSystem.current.IsPointerOverGameObject())
         {
 
-            if (!inPenMode) // Free Paint Mode
+            if (mode == PAINTMODE) // Free Paint Mode
             {
                 if (Input.GetMouseButtonDown(1))
                 { // Right Click to Erase
@@ -238,7 +246,7 @@ public class Modify : MonoBehaviour
                     posList = new List<WorldPos>();
                 }
             }
-            else if (inPenMode) // In Pen Mode
+            else if (mode == PENMODE) // In Pen Mode
             {
                 if (Input.GetMouseButtonDown(0))
                 { // Left Click
@@ -256,7 +264,7 @@ public class Modify : MonoBehaviour
                             {
 								if (isFirstPoint)
 								{
-									currentShape = new Shape(world, inPenMode);
+									currentShape = new Shape(world, mode);
 									Shape.addVertexWithHit(currentShape, hit);
 									isFirstPoint = false;
 									inspectorModify.shape = currentShape;
@@ -292,7 +300,7 @@ public class Modify : MonoBehaviour
                     // Reset everything
                     // Null out lastHit
                     lastHit = default(RaycastHit);
-					currentShape = new Shape(world, inPenMode);
+					currentShape = new Shape(world, mode);
 					inspectorModify.shape = currentShape;
 
                     // Reset first counters
@@ -322,35 +330,98 @@ public class Modify : MonoBehaviour
         // Todo: Think about changing this structure
     }
 
-    void TogglePenMode()
+    void ToggleMode()
     {
-        inPenMode = !inPenMode;
+        // Here we have to navigate through the state machine - space bar just cycles through it
+        bool penToolInProgress = !isFirstPoint;
+        if (mode == PAINTMODE)
+            mode++;
+        else if (mode == PENMODE)
+            mode++;
+        else if (mode == SELECTMODE)
+        {
+            if (penToolInProgress)
+                mode = PENMODE;
+            else
+                mode = PAINTMODE;
+        }
+
         Renderer renderer = cursorCube.GetComponent<Renderer>();
-        if (inPenMode)
+        if (mode == PAINTMODE)
+        {
+            renderer.enabled = true;
+            renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.643F, 0.1F));
+            freePaintToggle.isOn = true;
+        }
+        else if (mode == PENMODE)
         {
             // Set cursor colour
+            renderer.enabled = true;
             renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.1F, 0.643F));
             // Set pen tool button to pressed state
             penToolToggle.isOn = true;
         }
-        else
+        else if (mode == SELECTMODE)
         {
-            renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.643F, 0.1F));
-            freePaintToggle.isOn = true;
+            renderer.enabled = false;
+            selectToggle.isOn = true;
+        }
+        else if (mode == INTERACTMODE)
+        {
+
         }
     }
 
-    public void SetPenMode(bool newPenMode)
+    public void SetMode(int newMode)
     {
-        inPenMode = newPenMode;
+        // Here we explicitly set one mode
+        // [ ] Do we have to do checks for possible modes here?
+        mode = newMode;
+
         Renderer renderer = cursorCube.GetComponent<Renderer>();
-        if (inPenMode)
+        if (mode == PAINTMODE)
         {
-            renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.1F, 0.643F));
-        }
-        else
-        {
+            renderer.enabled = true;
             renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.643F, 0.1F));
+            freePaintToggle.isOn = true;
         }
+        else if (mode == PENMODE)
+        {
+            // Set cursor colour
+            renderer.enabled = true;
+            renderer.material.SetColor("_EmissionColor", new Color(0.1F, 0.1F, 0.643F));
+            // Set pen tool button to pressed state
+            penToolToggle.isOn = true;
+        }
+        else if (mode == SELECTMODE)
+        {
+            renderer.enabled = false;
+            selectToggle.isOn = true;
+        }
+        else if (mode == INTERACTMODE)
+        {
+
+        }
+    }
+
+    public void setPaintMode(bool paintModeOn)
+    {
+        if (paintModeOn)
+            SetMode(PAINTMODE);
+    }
+    public void SetPenMode(bool penModeOn)
+    {
+        if (penModeOn)
+            SetMode(PENMODE);
+    }
+    public void setSelectMode(bool selectModeOn)
+    {
+        if (selectModeOn)
+            SetMode(SELECTMODE);
+    }
+    public void setInteractMode(bool interactModeOn)
+    {
+        if (interactModeOn)
+            SetMode(INTERACTMODE);
     }
 }
