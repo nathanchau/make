@@ -45,6 +45,11 @@ public class Modify : MonoBehaviour
 
 	List<WorldPos> posList = new List<WorldPos>();
 
+    // Select Mode Variables
+    public bool isDraggingVertex = false;
+    public bool isDraggingShape = false;
+    private WorldPos lastDragPos;
+
     void Start()
 	{
 		point = new Vector3 (0.0f, 0.0f);
@@ -76,7 +81,7 @@ public class Modify : MonoBehaviour
         }
 
         // Change origin to new point
-        if (Input.GetMouseButtonDown(2))
+        if (Input.GetKeyDown(KeyCode.T) && !inInputField)
         {
             RaycastHit hit;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
@@ -278,10 +283,14 @@ public class Modify : MonoBehaviour
                         }
                     }
                 }
-                if (Input.GetMouseButtonDown(1))
+                else if (Input.GetMouseButtonDown(1))
                 { // Right Click
                   // Change all newly added blocks to the right block type
-					posList = new List<WorldPos>(currentShape.posList);
+                    posList = new List<WorldPos>();
+                    foreach (List<WorldPos> tempPosList in currentShape.posList)
+                    {
+                        posList.AddRange(tempPosList);
+                    }
 					foreach (Plane plane in currentShape.planes)
 					{
 						posList.AddRange(plane.fillPosList);
@@ -310,7 +319,82 @@ public class Modify : MonoBehaviour
 //					inspectorModify.minimizeAllSections();
 					inspectorModify.destroyAllSections();
                 }
-
+                else if (Input.GetMouseButtonDown(2))
+                {
+                    // Middle click
+                    // Check if on vertex of current shape, in middle of current shape, or neither
+                    RaycastHit hit;
+                    if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                    {
+                        // Get the position that we're pointing at
+                        WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                        // Check if it's within shape
+                        posList = new List<WorldPos>();
+                        foreach (List<WorldPos> tempPosList in currentShape.posList)
+                        {
+                            posList.AddRange(tempPosList);
+                        }
+                        foreach (Plane plane in currentShape.planes)
+                        {
+                            posList.AddRange(plane.fillPosList);
+                            posList.AddRange(plane.loftFillPosList);
+                        }
+                        if (posList.Contains(currentPos))
+                        {
+                            // Check if it's within vertices
+                            List<WorldPos> vertexPosList = new List<WorldPos>();
+                            foreach (List<WorldPos> tempPosList in currentShape.vertices)
+                            {
+                                vertexPosList.AddRange(tempPosList);
+                            }
+                            if (vertexPosList.Contains(currentPos))
+                            {
+                                Debug.Log("vertex");
+                                isDraggingVertex = true;
+                                lastDragPos = currentPos;
+                            }
+                            else
+                            {
+                                Debug.Log("shape");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("none");
+                        }
+                    }
+                }
+                else if (Input.GetMouseButton(2))
+                {
+                    if (isDraggingVertex)
+                    {
+                        RaycastHit hit;
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                        {
+                            // Get the position that we're pointing at
+                            WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                            if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
+                            {
+                                currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                lastDragPos = currentPos;
+                            }
+                        }
+                    }
+                }
+                else if (Input.GetMouseButtonUp(2))
+                {
+                    if (isDraggingVertex)
+                    {
+                        RaycastHit hit;
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                        {
+                            // Get the position that we're pointing at
+                            WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                            currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                            isDraggingVertex = false;
+                        }
+                    }
+                }
             }
         }
 	}
