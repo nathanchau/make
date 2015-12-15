@@ -278,4 +278,12 @@ public class Shape
             }
         }
     }
+    public void moveShapeFromPosToPos(WorldPos originalPos, WorldPos newPos, RaycastHit newHit)
+    {
+        // Steps
+        // Get delta
+        // Shift every point in shape that delta
+
+        // Raycasthits are going to be a problem - lastHit will be wrong
+    }
 }

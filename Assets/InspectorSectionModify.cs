@@ -10,6 +10,7 @@ public class InspectorSectionModify : MonoBehaviour {
     public Text textEditor;
 
     public bool isMinimized = true;
+    public bool isHighlighted = false;
 
     public InspectorModify inspectorModify;
 
@@ -41,10 +42,20 @@ public class InspectorSectionModify : MonoBehaviour {
             textEditorCanvasGroup.alpha = 1;
             textEditorCanvasGroup.interactable = true;
             textEditorCanvasGroup.blocksRaycasts = true;
-            // Show highlight
-            highlightCanvasGroup.alpha = 1;
-            highlightCanvasGroup.interactable = true;
-            highlightCanvasGroup.blocksRaycasts = true;
+            if (isHighlighted)
+            {
+                // Show highlight
+                highlightCanvasGroup.alpha = 1;
+                highlightCanvasGroup.interactable = true;
+                highlightCanvasGroup.blocksRaycasts = true;
+            }
+            else
+            {
+                // Hide highlight
+                highlightCanvasGroup.alpha = 0;
+                highlightCanvasGroup.interactable = false;
+                highlightCanvasGroup.blocksRaycasts = false;
+            }
             // Chevron pointing down
             chevron.rectTransform.localEulerAngles = new Vector3(0, 0, 0);
         }

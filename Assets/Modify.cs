@@ -46,10 +46,12 @@ public class Modify : MonoBehaviour
 	List<WorldPos> posList = new List<WorldPos>();
 
     // Select Mode Variables
+    public HighlightCircleModify highlightCircleModify;
     public bool isDraggingVertex = false;
     public bool isDraggingShape = false;
     private WorldPos lastDragPos;
     private int dragPlaneIndex = 0;
+    private int dragPosIndex = 0;
 
     void Start()
 	{
@@ -319,6 +321,9 @@ public class Modify : MonoBehaviour
 					// Destroy all sections in inspector
 //					inspectorModify.minimizeAllSections();
 					inspectorModify.destroyAllSections();
+
+                    // Remove highlight circle
+                    highlightCircleModify.isHighlighted = false;
                 }
                 else if (Input.GetMouseButtonDown(2))
                 {
@@ -351,6 +356,7 @@ public class Modify : MonoBehaviour
                                 {
                                     isVertex = true;
                                     dragPlaneIndex = currentShape.vertices.IndexOf(tempPosList);
+                                    dragPosIndex = vertexPosList.IndexOf(currentPos);
                                     break;
                                 }
                             }
@@ -358,6 +364,9 @@ public class Modify : MonoBehaviour
                             {
                                 Debug.Log("vertex");
                                 isDraggingVertex = true;
+                                inspectorModify.highlightVertex(dragPlaneIndex, dragPosIndex);
+                                highlightCircleModify.currentPos = currentPos;
+                                highlightCircleModify.isHighlighted = true;
                                 lastDragPos = currentPos;
                             }
                             else
@@ -389,12 +398,17 @@ public class Modify : MonoBehaviour
                                     {
                                         currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
                                         lastDragPos = currentPos;
+                                        highlightCircleModify.currentPos = currentPos;
+                                        // [ ] Could definitely make this more efficient if you had a function just for updating the text
+                                        inspectorModify.recalculateInspectorLayout();
                                     }
                                 }
                                 else
                                 {
                                     currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
                                     lastDragPos = currentPos;
+                                    highlightCircleModify.currentPos = currentPos;
+                                    inspectorModify.recalculateInspectorLayout();
                                 }
                             }
                         }
@@ -418,14 +432,81 @@ public class Modify : MonoBehaviour
                                     {
                                         currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
                                         lastDragPos = currentPos;
+                                        highlightCircleModify.currentPos = currentPos;
+                                        inspectorModify.recalculateInspectorLayout();
                                     }
                                 }
                                 else
                                 {
                                     currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
                                     lastDragPos = currentPos;
+                                    highlightCircleModify.currentPos = currentPos;
+                                    inspectorModify.recalculateInspectorLayout();
                                 }
                             }
+                            isDraggingVertex = false;
+                        }
+                    }
+                }
+            }
+        }
+        else // Over a UI object - just resolve existing
+        {
+            if (mode == PAINTMODE)
+            {
+                if (Input.GetMouseButtonUp(0))
+                {
+                    // Change all newly added blocks to the right block type
+                    RaycastHit hit;
+                    if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                    {
+                        EditTerrain.SetAllBlocksGivenPos(world, posList, hit, new BlockGrass());
+                    }
+                    else
+                    {
+                        EditTerrain.SetAllBlocksGivenPos(world, posList, lastHit, new BlockGrass());
+                    }
+
+                    // Null out lastHit
+                    lastHit = default(RaycastHit);
+
+                    // Null out poslist
+                    posList = new List<WorldPos>();
+                }
+            }
+            else if (mode == PENMODE)
+            {
+                if (Input.GetMouseButtonUp(2))
+                {
+                    if (isDraggingVertex)
+                    {
+                        RaycastHit hit;
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                        {
+                            // Get the position that we're pointing at
+                            WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                            if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
+                            {
+                                // Add a check for >3 vertices - if so, need to constrain to plane
+                                if (currentShape.planes[dragPlaneIndex].vertexPosList.Count > 3)
+                                {
+                                    if (Plane.isCoplanar(currentShape.planes[dragPlaneIndex], WorldPos.VectorFromWorldPos(currentPos)))
+                                    {
+                                        currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                        lastDragPos = currentPos;
+                                        highlightCircleModify.currentPos = currentPos;
+                                        inspectorModify.recalculateInspectorLayout();
+                                    }
+                                }
+                                else
+                                {
+                                    currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                    lastDragPos = currentPos;
+                                    highlightCircleModify.currentPos = currentPos;
+                                    inspectorModify.recalculateInspectorLayout();
+                                }
+                            }
+                            isDraggingVertex = false;
                         }
                     }
                 }

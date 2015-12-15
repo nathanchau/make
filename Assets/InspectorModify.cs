@@ -273,4 +273,43 @@ public class InspectorModify : MonoBehaviour {
 		}
 		sections = new List<Button>();
 	}
+
+    public void highlightVertex(int planeIndex, int posIndex)
+    {
+        // Turn off all other highlights
+        for (int i = 0; i < sections.Count; i++)
+        {
+            if (i != planeIndex)
+                sections[i].GetComponent<InspectorSectionModify>().isHighlighted = false;
+        }
+        // Lazily instantiate the right inspector section
+        Button section;
+        if (planeIndex < sections.Count)
+            section = sections[planeIndex];
+        else
+        {
+            section = Instantiate(inspectorSection);
+            sections.Add(section);
+            section.transform.SetParent(inspector.transform);
+            section.transform.SetSiblingIndex(0);
+            InspectorSectionModify tempSectionModify = section.GetComponent<InspectorSectionModify>();
+            tempSectionModify.inspectorModify = this;
+        }
+        // Get the highlight in that section
+        Image highlight = null;
+        Image[] images = section.GetComponentsInChildren<Image>();
+        foreach (Image image in images)
+        {
+            if (image.transform.tag == "inspector")
+            {
+                highlight = image;
+                break;
+            }
+        }
+        // Enable the highlight in this section
+        section.GetComponent<InspectorSectionModify>().isHighlighted = true;
+
+        // Set highlight to the right position
+        highlight.rectTransform.anchoredPosition = new Vector3(-118, -29-18*posIndex, 0);
+    }
 }
