@@ -49,6 +49,7 @@ public class Modify : MonoBehaviour
     public bool isDraggingVertex = false;
     public bool isDraggingShape = false;
     private WorldPos lastDragPos;
+    private int dragPlaneIndex = 0;
 
     void Start()
 	{
@@ -342,12 +343,18 @@ public class Modify : MonoBehaviour
                         if (posList.Contains(currentPos))
                         {
                             // Check if it's within vertices
-                            List<WorldPos> vertexPosList = new List<WorldPos>();
+                            bool isVertex = false;
                             foreach (List<WorldPos> tempPosList in currentShape.vertices)
                             {
-                                vertexPosList.AddRange(tempPosList);
+                                List<WorldPos> vertexPosList = new List<WorldPos>(tempPosList);
+                                if (vertexPosList.Contains(currentPos))
+                                {
+                                    isVertex = true;
+                                    dragPlaneIndex = currentShape.vertices.IndexOf(tempPosList);
+                                    break;
+                                }
                             }
-                            if (vertexPosList.Contains(currentPos))
+                            if (isVertex)
                             {
                                 Debug.Log("vertex");
                                 isDraggingVertex = true;
@@ -375,8 +382,20 @@ public class Modify : MonoBehaviour
                             WorldPos currentPos = EditTerrain.GetBlockPos(hit);
                             if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
                             {
-                                currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
-                                lastDragPos = currentPos;
+                                // Add a check for >3 vertices - if so, need to constrain to plane
+                                if (currentShape.planes[dragPlaneIndex].vertexPosList.Count > 3)
+                                {
+                                    if (Plane.isCoplanar(currentShape.planes[dragPlaneIndex], WorldPos.VectorFromWorldPos(currentPos)))
+                                    {
+                                        currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                        lastDragPos = currentPos;
+                                    }
+                                }
+                                else
+                                {
+                                    currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                    lastDragPos = currentPos;
+                                }
                             }
                         }
                     }
@@ -390,8 +409,23 @@ public class Modify : MonoBehaviour
                         {
                             // Get the position that we're pointing at
                             WorldPos currentPos = EditTerrain.GetBlockPos(hit);
-                            currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
-                            isDraggingVertex = false;
+                            if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
+                            {
+                                // Add a check for >3 vertices - if so, need to constrain to plane
+                                if (currentShape.planes[dragPlaneIndex].vertexPosList.Count > 3)
+                                {
+                                    if (Plane.isCoplanar(currentShape.planes[dragPlaneIndex], WorldPos.VectorFromWorldPos(currentPos)))
+                                    {
+                                        currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                        lastDragPos = currentPos;
+                                    }
+                                }
+                                else
+                                {
+                                    currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                    lastDragPos = currentPos;
+                                }
+                            }
                         }
                     }
                 }
