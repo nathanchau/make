@@ -469,7 +469,7 @@ public class Modify : MonoBehaviour
                         RaycastHit hit;
                         // Make raycast only hit UI objects (Guide Plane)
                         LayerMask mask = 1 << LayerMask.NameToLayer("UI");
-                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
                         {
                             // Check if mouse has moved at all - if it hasn't, we don't want to move the object
                             if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
@@ -673,7 +673,7 @@ public class Modify : MonoBehaviour
                             RaycastHit hit;
                             // Make raycast only hit UI objects (Guide Plane)
                             LayerMask mask = 1 << LayerMask.NameToLayer("UI");
-                            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
                             {
                                 // Check if mouse has moved at all - if it hasn't, we don't want to move the object
                                 if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
