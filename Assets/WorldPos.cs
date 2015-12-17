@@ -35,8 +35,23 @@ public struct WorldPos
         return false;
     }
 
+    public WorldPos Add(WorldPos pos)
+    {
+        return new WorldPos(x + pos.x, y + pos.y, z + pos.z);
+    }
+
+    public WorldPos Subtract(WorldPos pos)
+    {
+        return new WorldPos(x - pos.x, y - pos.y, z - pos.z);
+    }
+
     public static Vector3 VectorFromWorldPos(WorldPos pos)
     {
 		return new Vector3((float)pos.x, (float)pos.y, (float)pos.z);
+    }
+
+    public static WorldPos WorldPosFromVector(Vector3 vector)
+    {
+        return new WorldPos(Mathf.RoundToInt(vector.x), Mathf.RoundToInt(vector.y), Mathf.RoundToInt(vector.z));
     }
 }

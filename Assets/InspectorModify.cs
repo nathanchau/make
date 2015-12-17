@@ -312,4 +312,12 @@ public class InspectorModify : MonoBehaviour {
         // Set highlight to the right position
         highlight.rectTransform.anchoredPosition = new Vector3(-118, -29-18*posIndex, 0);
     }
+
+    public void turnOffAllHighlights()
+    {
+        for (int i = 0; i < sections.Count; i++)
+        {
+            sections[i].GetComponent<InspectorSectionModify>().isHighlighted = false;
+        }
+    }
 }

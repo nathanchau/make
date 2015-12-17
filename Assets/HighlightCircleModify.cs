@@ -20,5 +20,13 @@ public class HighlightCircleModify : MonoBehaviour {
             circleRenderer.enabled = true;
         else
             circleRenderer.enabled = false;
-	}
+
+        // Draw lines to the highlighted point
+        Debug.DrawLine(WorldPos.VectorFromWorldPos(currentPos), new Vector3(currentPos.x, 0, 0), Color.white, 0.0f, false);
+        Debug.DrawLine(WorldPos.VectorFromWorldPos(currentPos), new Vector3(0, currentPos.y, 0), Color.white, 0.0f, false);
+        Debug.DrawLine(WorldPos.VectorFromWorldPos(currentPos), new Vector3(0, 0, currentPos.z), Color.white, 0.0f, false);
+        Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(currentPos.x, 0, 0), Color.white, 0.0f, false);
+        Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(0, currentPos.y, 0), Color.white, 0.0f, false);
+        Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(0, 0, currentPos.z), Color.white, 0.0f, false);
+    }
 }

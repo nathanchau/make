@@ -27,8 +27,13 @@ public class Shape
 	private RaycastHit lastHit = default(RaycastHit);
 	private RaycastHit firstHitOnPlane = default(RaycastHit);
 
-	// Counters
-	private int numVerticesOnCurrentPlane = 0;
+    // Positions
+    private WorldPos position = new WorldPos();
+    private WorldPos lastPosition = new WorldPos();
+    private WorldPos firstPositionOnPlane = new WorldPos();
+
+    // Counters
+    private int numVerticesOnCurrentPlane = 0;
 	private bool isFirstPoint = true;
 	private bool firstPlaneSet = false;
 
@@ -38,25 +43,28 @@ public class Shape
         mode = newMode;
     }
 	
-	public static void addVertexWithHit(Shape shape, RaycastHit newHit)
+	public static void addVertexWithHit(Shape shape, RaycastHit newHit, bool adjacent)
 	{
 		shape.hit = newHit;
+        shape.position = EditTerrain.GetBlockPos(newHit, adjacent);
 		recalculateShape(shape);
 	}
 
 	// Call this function when a new vertex added to shape or existing vertex changed - recalculates points in shape
 	private static void recalculateShape(Shape shape)
 	{
-		// Instead of just setting block at current position, we want to set all blocks 
-		//  between as well - so we interpolate between last position and current
-		//  and set all blocks we intersected
-		List<WorldPos> placedEdgePosList = EditTerrain.SetAllBlocksBetween(shape.lastHit, shape.hit, shape.world, new BlockTemp(), true);
+        // Instead of just setting block at current position, we want to set all blocks 
+        //  between as well - so we interpolate between last position and current
+        //  and set all blocks we intersected
+        //List<WorldPos> placedEdgePosList = EditTerrain.SetAllBlocksBetween(shape.lastHit, shape.hit, shape.world, new BlockTemp(), true);
+        List<WorldPos> placedEdgePosList;
 		//shape.posList.AddRange(placedEdgePosList);
 		
 		// Add to edgeList and vertexPosList
 		// If it's the first point being placed, it's going to try to set an edge from null to this point - don't let it
 		if (shape.isFirstPoint)
         {
+            placedEdgePosList = EditTerrain.SetAllBlocksBetweenPos(shape.position, shape.position, shape.world, shape.hit, new BlockTemp());
             shape.isFirstPoint = false;
             shape.posList.Add(new List<WorldPos>());
             shape.posList[shape.posList.Count-1].AddRange(placedEdgePosList);
@@ -66,6 +74,7 @@ public class Shape
         }
         else
         {
+            placedEdgePosList = EditTerrain.SetAllBlocksBetweenPos(shape.lastPosition, shape.position, shape.world, shape.hit, new BlockTemp());
             shape.currentPlane.edgeList.Add(placedEdgePosList);
             shape.posList[shape.posList.Count - 1].AddRange(placedEdgePosList);
         }
@@ -74,14 +83,18 @@ public class Shape
 		shape.vertices[shape.vertices.Count - 1].Add(placedEdgePosList[placedEdgePosList.Count - 1]);
 		//Debug.Log("z being placed: " + placedEdgePosList[placedEdgePosList.Count - 1].z);
 		shape.lastHit = shape.hit;
-		
+        shape.lastPosition = shape.position;
+
 		shape.numVerticesOnCurrentPlane++;
 		if (shape.numVerticesOnCurrentPlane == 1)
-			shape.firstHitOnPlane = shape.hit;
-		
-		// If 2 points so far
-		// Draw edge back as well, so that we don't break loft algorithm
-		if (shape.numVerticesOnCurrentPlane == 2)
+        {
+            shape.firstHitOnPlane = shape.hit;
+            shape.firstPositionOnPlane = shape.position;
+        }
+
+        // If 2 points so far
+        // Draw edge back as well, so that we don't break loft algorithm
+        if (shape.numVerticesOnCurrentPlane == 2)
 		{
 			// Technically we've already drawn this exact edge, so we'll just add to the
 			//  edgeList. We also add to the fillPosList because this is an inferred edge
@@ -96,10 +109,11 @@ public class Shape
 
 			// Remove previously inferred edge
 			shape.currentPlane.edgeList.RemoveAt(shape.currentPlane.edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
-			
-			// Add new edge
-			// [ ] - Slight problem here - erases first block - add an optional variable to function
-			List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(shape.hit, shape.firstHitOnPlane, shape.world, new BlockTemp(), true);
+
+            // Add new edge
+            // [ ] - Slight problem here - erases first block - add an optional variable to function
+            //List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(shape.hit, shape.firstHitOnPlane, shape.world, new BlockTemp(), true);
+            List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetweenPos(shape.position, shape.firstPositionOnPlane, shape.world, shape.hit, new BlockTemp());
 			shape.currentPlane.fillPosList.AddRange(placedPosList);
 			shape.currentPlane.edgeList.Add(placedPosList);
 			
@@ -122,9 +136,10 @@ public class Shape
 				
 				// Remove the previously inferred edge
 				shape.currentPlane.edgeList.RemoveAt(shape.currentPlane.edgeList.Count - 2); // -2 because that's position of end-beginning edge from last time
-				
-				// Add edge
-				List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(shape.hit, shape.firstHitOnPlane, shape.world, new BlockTemp(), true);
+
+                // Add edge
+                //List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetween(shape.hit, shape.firstHitOnPlane, shape.world, new BlockTemp(), true);
+                List<WorldPos> placedPosList = EditTerrain.SetAllBlocksBetweenPos(shape.position, shape.firstPositionOnPlane, shape.world, shape.hit, new BlockTemp());
 				shape.currentPlane.fillPosList.AddRange(placedPosList);
 				shape.currentPlane.edgeList.Add(placedPosList);
 				
@@ -145,6 +160,7 @@ public class Shape
 				// Reset plane variables
 				shape.numVerticesOnCurrentPlane = 1;
 				shape.firstHitOnPlane = shape.hit;
+                shape.firstPositionOnPlane = shape.position;
 				WorldPos tempPos = shape.currentPlane.vertexPosList[shape.currentPlane.vertexPosList.Count - 1];
                 // Remove edge between planes
                 List<WorldPos> tempEdgeList = shape.currentPlane.edgeList[shape.currentPlane.edgeList.Count - 1];
@@ -283,7 +299,97 @@ public class Shape
         // Steps
         // Get delta
         // Shift every point in shape that delta
+        Vector3 delta = WorldPos.VectorFromWorldPos(newPos) - WorldPos.VectorFromWorldPos(originalPos);
 
-        // Raycasthits are going to be a problem - lastHit will be wrong
+        // Make a list of all points set in old position, all points set in new position
+        List<WorldPos> oldPosList = new List<WorldPos>();
+        foreach (List<WorldPos> tempPosList in posList)
+        {
+            oldPosList.AddRange(tempPosList);
+        }
+        foreach (Plane plane in planes)
+        {
+            oldPosList.AddRange(plane.fillPosList);
+            oldPosList.AddRange(plane.loftFillPosList);
+        }
+        List<WorldPos> newPosList = new List<WorldPos>();
+        for (int i = 0; i < oldPosList.Count; i++)
+        {
+            Vector3 newVectorPos = WorldPos.VectorFromWorldPos(oldPosList[i]) + delta;
+            newPosList.Add(new WorldPos(Mathf.RoundToInt(newVectorPos.x), Mathf.RoundToInt(newVectorPos.y), Mathf.RoundToInt(newVectorPos.z)));
+        }
+
+        // First set all old vertices to blocktemp
+        List<WorldPos> flatVertices = new List<WorldPos>();
+        foreach (List<WorldPos> posList in vertices)
+        {
+            flatVertices.AddRange(posList);
+        }
+        EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTemp());
+
+        // Find unique points - set them to blocktemp and blockair respectively
+        //List<WorldPos> intersection = newPosList.Intersect<WorldPos>(oldPosList).ToList();
+        //List<WorldPos> uniqueNewPosList = newPosList.Where(p => !oldPosList.Any(p2 => p2.Equals(p))).ToList();
+        //List<WorldPos> uniqueOldPosList = oldPosList.Where(p => !newPosList.Any(p2 => p2.Equals(p))).ToList();
+
+        //EditTerrain.SetAllBlocksGivenPos(world, uniqueNewPosList, hit, new BlockTemp());
+        //EditTerrain.SetAllBlocksGivenPos(world, uniqueOldPosList, hit, new BlockAir());
+        EditTerrain.SetAllBlocksGivenPos(world, oldPosList, hit, new BlockAir());
+        EditTerrain.SetAllBlocksGivenPos(world, newPosList, hit, new BlockTemp());
+
+        // Have to shift: vertices, posList, position, lastPosition, firstPositionOnPlane
+        //  in Planes: recalculate plane variables, vertexPosList, edgeList, fillPosList, loftFillPosList
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            for (int j = 0; j < vertices[i].Count; j++)
+            {
+                Vector3 newVectorPos = WorldPos.VectorFromWorldPos(vertices[i][j]) + delta;
+                vertices[i][j] = new WorldPos(Mathf.RoundToInt(newVectorPos.x), Mathf.RoundToInt(newVectorPos.y), Mathf.RoundToInt(newVectorPos.z));
+            }
+        }
+        for (int i = 0; i < posList.Count; i++)
+        {
+            for (int j = 0; j < posList[i].Count; j++)
+            {
+                Vector3 newVectorPos = WorldPos.VectorFromWorldPos(posList[i][j]) + delta;
+                posList[i][j] = new WorldPos(Mathf.RoundToInt(newVectorPos.x), Mathf.RoundToInt(newVectorPos.y), Mathf.RoundToInt(newVectorPos.z));
+            }
+        }
+        position = position.Add(WorldPos.WorldPosFromVector(delta));
+        lastPosition = lastPosition.Add(WorldPos.WorldPosFromVector(delta));
+        firstPositionOnPlane = firstPositionOnPlane.Add(WorldPos.WorldPosFromVector(delta));
+
+        foreach (Plane plane in planes)
+        {
+            for (int i = 0; i < plane.vertexPosList.Count; i++)
+            {
+                plane.vertexPosList[i] = plane.vertexPosList[i].Add(WorldPos.WorldPosFromVector(delta));
+            }
+            for (int i = 0; i < plane.edgeList.Count; i++)
+            {
+                for (int j = 0; j < plane.edgeList[i].Count; j++)
+                {
+                    plane.edgeList[i][j] = plane.edgeList[i][j].Add(WorldPos.WorldPosFromVector(delta));
+                }
+            }
+            for (int i = 0; i < plane.fillPosList.Count; i++)
+            {
+                plane.fillPosList[i] = plane.fillPosList[i].Add(WorldPos.WorldPosFromVector(delta));
+            }
+            for (int i = 0; i < plane.loftFillPosList.Count; i++)
+            {
+                plane.loftFillPosList[i] = plane.loftFillPosList[i].Add(WorldPos.WorldPosFromVector(delta));
+            }
+            if (plane.vertexPosList.Count >= 3)
+                plane.calculatePlaneVariables();
+        }
+
+        // Do a final pass to set new vertices yellow
+        flatVertices = new List<WorldPos>();
+        foreach (List<WorldPos> posList in vertices)
+        {
+            flatVertices.AddRange(posList);
+        }
+        EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTempVertex());
     }
 }
