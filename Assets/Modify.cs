@@ -333,7 +333,10 @@ public class Modify : MonoBehaviour
                     // Middle click
                     // Check if on vertex of current shape, in middle of current shape, or neither
                     RaycastHit hit;
-                    if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                    // Make raycast not hit UI objects (Guide Plane)
+                    LayerMask mask = 1 << LayerMask.NameToLayer("UI");
+                    mask = ~mask;
+                    if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
                     {
                         // Get the position that we're pointing at
                         WorldPos currentPos = EditTerrain.GetBlockPos(hit);
@@ -520,6 +523,211 @@ public class Modify : MonoBehaviour
                                 }
                             }
                             isDraggingShape = false;
+                        }
+                    }
+                }
+            }
+            else if (mode == SELECTMODE)
+            {
+                // If we're in the middle of using pen tool
+                if (isFirstPoint == false)
+                {
+                if (Input.GetMouseButtonDown(0))
+                    {
+                        // Middle click
+                        // Check if on vertex of current shape, in middle of current shape, or neither
+                        RaycastHit hit;
+                        // Make raycast not hit UI objects (Guide Plane)
+                        LayerMask mask = 1 << LayerMask.NameToLayer("UI");
+                        mask = ~mask;
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
+                        {
+                            // Get the position that we're pointing at
+                            WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                            // Check if it's within shape
+                            posList = new List<WorldPos>();
+                            foreach (List<WorldPos> tempPosList in currentShape.posList)
+                            {
+                                posList.AddRange(tempPosList);
+                            }
+                            foreach (Plane plane in currentShape.planes)
+                            {
+                                posList.AddRange(plane.fillPosList);
+                                posList.AddRange(plane.loftFillPosList);
+                            }
+                            if (posList.Contains(currentPos))
+                            {
+                                // Check if it's within vertices
+                                bool isVertex = false;
+                                foreach (List<WorldPos> tempPosList in currentShape.vertices)
+                                {
+                                    List<WorldPos> vertexPosList = new List<WorldPos>(tempPosList);
+                                    if (vertexPosList.Contains(currentPos))
+                                    {
+                                        isVertex = true;
+                                        dragPlaneIndex = currentShape.vertices.IndexOf(tempPosList);
+                                        dragPosIndex = vertexPosList.IndexOf(currentPos);
+                                        break;
+                                    }
+                                }
+                                if (isVertex)
+                                {
+                                    Debug.Log("vertex");
+                                    isDraggingVertex = true;
+                                    inspectorModify.highlightVertex(dragPlaneIndex, dragPosIndex);
+                                    highlightCircleModify.currentPos = currentPos;
+                                    highlightCircleModify.isHighlighted = true;
+                                    lastDragPos = currentPos;
+                                    // Move guide plane to be centered at new position
+                                    guidePlane.transform.position = new Vector3(currentPos.x, currentPos.y, currentPos.z);
+                                    // Get current screen space position of cursor
+                                    dragMousePos = Input.mousePosition;
+                                    startedDragging = false;
+                                }
+                                else
+                                {
+                                    Debug.Log("shape");
+                                    isDraggingShape = true;
+                                    lastDragPos = currentPos;
+                                    inspectorModify.turnOffAllHighlights();
+                                    highlightCircleModify.isHighlighted = false;
+                                    // Move guide plane to be centered at new position
+                                    guidePlane.transform.position = new Vector3(currentPos.x, currentPos.y, currentPos.z);
+                                    dragMousePos = Input.mousePosition;
+                                    startedDragging = false;
+                                }
+                            }
+                            else
+                            {
+                                Debug.Log("none");
+                            }
+                        }
+                    }
+                    else if (Input.GetMouseButton(0))
+                    {
+                        if (isDraggingVertex)
+                        {
+                            RaycastHit hit;
+                            // Make raycast only hit UI objects (Guide Plane)
+                            LayerMask mask = 1 << LayerMask.NameToLayer("UI");
+                            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
+                            {
+                                // Check if mouse has moved at all - if it hasn't, we don't want to move the object
+                                if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
+                                {
+                                    startedDragging = true;
+                                    // Get the position that we're pointing at
+                                    WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                                    if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
+                                    {
+                                        // Add a check for >3 vertices - if so, need to constrain to plane
+                                        if (currentShape.planes[dragPlaneIndex].vertexPosList.Count > 3)
+                                        {
+                                            if (Plane.isCoplanar(currentShape.planes[dragPlaneIndex], WorldPos.VectorFromWorldPos(currentPos)))
+                                            {
+                                                currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                                lastDragPos = currentPos;
+                                                highlightCircleModify.currentPos = currentPos;
+                                                // [ ] Could definitely make this more efficient if you had a function just for updating the text
+                                                inspectorModify.recalculateInspectorLayout();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                            lastDragPos = currentPos;
+                                            highlightCircleModify.currentPos = currentPos;
+                                            inspectorModify.recalculateInspectorLayout();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (isDraggingShape)
+                        {
+                            RaycastHit hit;
+                            // Make raycast only hit UI objects (Guide Plane)
+                            LayerMask mask = 1 << LayerMask.NameToLayer("UI");
+                            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
+                            {
+                                // Check if mouse has moved at all - if it hasn't, we don't want to move the object
+                                if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
+                                {
+                                    startedDragging = true;
+                                    // Get the position that we're pointing at
+                                    WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                                    if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
+                                    {
+                                        currentShape.moveShapeFromPosToPos(lastDragPos, currentPos, hit);
+                                        lastDragPos = currentPos;
+                                        inspectorModify.recalculateInspectorLayout();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (Input.GetMouseButtonUp(0))
+                    {
+                        if (isDraggingVertex)
+                        {
+                            RaycastHit hit;
+                            // Make raycast only hit UI objects (Guide Plane)
+                            LayerMask mask = 1 << LayerMask.NameToLayer("UI");
+                            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                            {
+                                // Check if mouse has moved at all - if it hasn't, we don't want to move the object
+                                if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
+                                {
+                                    startedDragging = true;
+                                    // Get the position that we're pointing at
+                                    WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                                    if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
+                                    {
+                                        // Add a check for >3 vertices - if so, need to constrain to plane
+                                        if (currentShape.planes[dragPlaneIndex].vertexPosList.Count > 3)
+                                        {
+                                            if (Plane.isCoplanar(currentShape.planes[dragPlaneIndex], WorldPos.VectorFromWorldPos(currentPos)))
+                                            {
+                                                currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                                lastDragPos = currentPos;
+                                                highlightCircleModify.currentPos = currentPos;
+                                                inspectorModify.recalculateInspectorLayout();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
+                                            lastDragPos = currentPos;
+                                            highlightCircleModify.currentPos = currentPos;
+                                            inspectorModify.recalculateInspectorLayout();
+                                        }
+                                    }
+                                }
+                                isDraggingVertex = false;
+                            }
+                        }
+                        else if (isDraggingShape)
+                        {
+                            RaycastHit hit;
+                            // Make raycast only hit UI objects (Guide Plane)
+                            LayerMask mask = 1 << LayerMask.NameToLayer("UI");
+                            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
+                            {
+                                // Check if mouse has moved at all - if it hasn't, we don't want to move the object
+                                if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
+                                {
+                                    startedDragging = true;
+                                    // Get the position that we're pointing at
+                                    WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                                    if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
+                                    {
+                                        currentShape.moveShapeFromPosToPos(lastDragPos, currentPos, hit);
+                                        lastDragPos = currentPos;
+                                        inspectorModify.recalculateInspectorLayout();
+                                    }
+                                }
+                                isDraggingShape = false;
+                            }
                         }
                     }
                 }
