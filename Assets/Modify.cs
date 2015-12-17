@@ -18,6 +18,9 @@ public class Modify : MonoBehaviour
     public Toggle freePaintToggle;
     public Toggle selectToggle;
 
+    // Holds world state
+    public WorldState worldState = new WorldState();
+
     // Modes
     public int mode = 0;
     private static int PAINTMODE = 0;
@@ -312,6 +315,9 @@ public class Modify : MonoBehaviour
                         EditTerrain.SetAllBlocksGivenPos(world, posList, lastHit, new BlockGrass());
                     }
 
+                    // Store the shape we made in the world state
+                    worldState.storeShape(currentShape);
+
                     // Reset everything
                     // Null out lastHit
                     lastHit = default(RaycastHit);
@@ -529,10 +535,66 @@ public class Modify : MonoBehaviour
             }
             else if (mode == SELECTMODE)
             {
-                // If we're in the middle of using pen tool
-                if (isFirstPoint == false)
+                // Not in the middle of using pen tool
+                if (isFirstPoint == true)
                 {
-                if (Input.GetMouseButtonDown(0))
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        RaycastHit hit;
+                        // Make raycast not hit UI objects (Guide Plane)
+                        LayerMask mask = 1 << LayerMask.NameToLayer("UI");
+                        mask = ~mask;
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
+                        {
+                            Debug.Log("here");
+                            // Get the position that we're pointing at
+                            WorldPos currentPos = EditTerrain.GetBlockPos(hit);
+                            List<Shape> shapeList = worldState.shapesAtPos(currentPos);
+                            if (shapeList.Count > 0)
+                            {
+                                Debug.Log("there");
+                                // Find object that was clicked on in worldState, throw back into edit mode
+                                // Need to:
+                                // - Set currentShape to the shape
+                                // [ ] Currently fairly naive - we don't really have a way to choose which one if two objects are at point
+                                // This is rare anyways
+                                currentShape = shapeList[0];
+
+                                // - Set isFirstPoint to false
+                                isFirstPoint = false;
+
+                                // - Set the blocks to the right colours
+                                posList = new List<WorldPos>();
+                                foreach (List<WorldPos> tempPosList in currentShape.posList)
+                                {
+                                    posList.AddRange(tempPosList);
+                                }
+                                foreach (Plane plane in currentShape.planes)
+                                {
+                                    posList.AddRange(plane.fillPosList);
+                                    posList.AddRange(plane.loftFillPosList);
+                                }
+                                EditTerrain.SetAllBlocksGivenPos(world, posList, hit, new BlockTemp());
+
+                                // -- Set vertices to right colour
+                                List<WorldPos> flatVertices = new List<WorldPos>();
+                                foreach (List<WorldPos> tempPosList in currentShape.vertices)
+                                {
+                                    flatVertices.AddRange(tempPosList);
+                                }
+                                EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTempVertex());
+
+                                // Set up inspector
+                                inspectorModify.shape = currentShape;
+                                inspectorModify.recalculateInspectorLayout();
+                            }
+                        }
+                    }
+                }
+                // If we're in the middle of using pen tool
+                else if (isFirstPoint == false)
+                {
+                    if (Input.GetMouseButtonDown(0))
                     {
                         // Middle click
                         // Check if on vertex of current shape, in middle of current shape, or neither
