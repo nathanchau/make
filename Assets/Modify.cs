@@ -374,7 +374,6 @@ public class Modify : MonoBehaviour
                             }
                             if (isVertex)
                             {
-                                Debug.Log("vertex");
                                 isDraggingVertex = true;
                                 inspectorModify.highlightVertex(dragPlaneIndex, dragPosIndex);
                                 highlightCircleModify.currentPos = currentPos;
@@ -388,7 +387,6 @@ public class Modify : MonoBehaviour
                             }
                             else
                             {
-                                Debug.Log("shape");
                                 isDraggingShape = true;
                                 lastDragPos = currentPos;
                                 inspectorModify.turnOffAllHighlights();
@@ -398,137 +396,10 @@ public class Modify : MonoBehaviour
                                 dragMousePos = Input.mousePosition;
                                 startedDragging = false;
                             }
+                            selectToggle.isOn = true;
                         }
                         else
                         {
-                            Debug.Log("none");
-                        }
-                    }
-                }
-                else if (Input.GetMouseButton(2))
-                {
-                    if (isDraggingVertex)
-                    {
-                        RaycastHit hit;
-                        // Make raycast only hit UI objects (Guide Plane)
-                        LayerMask mask = 1 << LayerMask.NameToLayer("UI");
-                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
-                        {
-                            // Check if mouse has moved at all - if it hasn't, we don't want to move the object
-                            if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
-                            {
-                                startedDragging = true;
-                                // Get the position that we're pointing at
-                                WorldPos currentPos = EditTerrain.GetBlockPos(hit);
-                                if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
-                                {
-                                    // Add a check for >3 vertices - if so, need to constrain to plane
-                                    if (currentShape.planes[dragPlaneIndex].vertexPosList.Count > 3)
-                                    {
-                                        if (Plane.isCoplanar(currentShape.planes[dragPlaneIndex], WorldPos.VectorFromWorldPos(currentPos)))
-                                        {
-                                            currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
-                                            lastDragPos = currentPos;
-                                            highlightCircleModify.currentPos = currentPos;
-                                            // [ ] Could definitely make this more efficient if you had a function just for updating the text
-                                            inspectorModify.recalculateInspectorLayout();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
-                                        lastDragPos = currentPos;
-                                        highlightCircleModify.currentPos = currentPos;
-                                        inspectorModify.recalculateInspectorLayout();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else if (isDraggingShape)
-                    {
-                        RaycastHit hit;
-                        // Make raycast only hit UI objects (Guide Plane)
-                        LayerMask mask = 1 << LayerMask.NameToLayer("UI");
-                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
-                        {
-                            // Check if mouse has moved at all - if it hasn't, we don't want to move the object
-                            if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
-                            {
-                                startedDragging = true;
-                                // Get the position that we're pointing at
-                                WorldPos currentPos = EditTerrain.GetBlockPos(hit);
-                                if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
-                                {
-                                    currentShape.moveShapeFromPosToPos(lastDragPos, currentPos, hit);
-                                    lastDragPos = currentPos;
-                                    inspectorModify.recalculateInspectorLayout();
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (Input.GetMouseButtonUp(2))
-                {
-                    if (isDraggingVertex)
-                    {
-                        RaycastHit hit;
-                        // Make raycast only hit UI objects (Guide Plane)
-                        LayerMask mask = 1 << LayerMask.NameToLayer("UI");
-                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
-                        {
-                            // Check if mouse has moved at all - if it hasn't, we don't want to move the object
-                            if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
-                            {
-                                startedDragging = true;
-                                // Get the position that we're pointing at
-                                WorldPos currentPos = EditTerrain.GetBlockPos(hit);
-                                if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
-                                {
-                                    // Add a check for >3 vertices - if so, need to constrain to plane
-                                    if (currentShape.planes[dragPlaneIndex].vertexPosList.Count > 3)
-                                    {
-                                        if (Plane.isCoplanar(currentShape.planes[dragPlaneIndex], WorldPos.VectorFromWorldPos(currentPos)))
-                                        {
-                                            currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
-                                            lastDragPos = currentPos;
-                                            highlightCircleModify.currentPos = currentPos;
-                                            inspectorModify.recalculateInspectorLayout();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        currentShape.moveVertexFromPosToPos(lastDragPos, currentPos, hit);
-                                        lastDragPos = currentPos;
-                                        highlightCircleModify.currentPos = currentPos;
-                                        inspectorModify.recalculateInspectorLayout();
-                                    }
-                                }
-                            }
-                            isDraggingVertex = false;
-                        }
-                    }
-                    else if (isDraggingShape)
-                    {
-                        RaycastHit hit;
-                        // Make raycast only hit UI objects (Guide Plane)
-                        LayerMask mask = 1 << LayerMask.NameToLayer("UI");
-                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
-                        {
-                            // Check if mouse has moved at all - if it hasn't, we don't want to move the object
-                            if (startedDragging || (dragMousePos - Input.mousePosition).magnitude > startDragTolerance)
-                            {
-                                startedDragging = true;
-                                // Get the position that we're pointing at
-                                WorldPos currentPos = EditTerrain.GetBlockPos(hit);
-                                if (currentPos.x != lastDragPos.x || currentPos.y != lastDragPos.y || currentPos.z != lastDragPos.z)
-                                {
-                                    currentShape.moveShapeFromPosToPos(lastDragPos, currentPos, hit);
-                                    lastDragPos = currentPos;
-                                    inspectorModify.recalculateInspectorLayout();
-                                }
-                            }
-                            isDraggingShape = false;
                         }
                     }
                 }
@@ -546,19 +417,20 @@ public class Modify : MonoBehaviour
                         mask = ~mask;
                         if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200, mask))
                         {
-                            Debug.Log("here");
                             // Get the position that we're pointing at
                             WorldPos currentPos = EditTerrain.GetBlockPos(hit);
                             List<Shape> shapeList = worldState.shapesAtPos(currentPos);
                             if (shapeList.Count > 0)
                             {
-                                Debug.Log("there");
                                 // Find object that was clicked on in worldState, throw back into edit mode
                                 // Need to:
                                 // - Set currentShape to the shape
                                 // [ ] Currently fairly naive - we don't really have a way to choose which one if two objects are at point
                                 // This is rare anyways
                                 currentShape = shapeList[0];
+
+                                // Remove shape from worldState - it's in progress again
+                                worldState.removeShape(currentShape);
 
                                 // - Set isFirstPoint to false
                                 isFirstPoint = false;
@@ -634,7 +506,6 @@ public class Modify : MonoBehaviour
                                 }
                                 if (isVertex)
                                 {
-                                    Debug.Log("vertex");
                                     isDraggingVertex = true;
                                     inspectorModify.highlightVertex(dragPlaneIndex, dragPosIndex);
                                     highlightCircleModify.currentPos = currentPos;
@@ -648,7 +519,6 @@ public class Modify : MonoBehaviour
                                 }
                                 else
                                 {
-                                    Debug.Log("shape");
                                     isDraggingShape = true;
                                     lastDragPos = currentPos;
                                     inspectorModify.turnOffAllHighlights();
@@ -661,11 +531,10 @@ public class Modify : MonoBehaviour
                             }
                             else
                             {
-                                Debug.Log("none");
                             }
                         }
                     }
-                    else if (Input.GetMouseButton(0))
+                    else if (Input.GetMouseButton(0) || Input.GetMouseButton(2))
                     {
                         if (isDraggingVertex)
                         {
@@ -728,7 +597,7 @@ public class Modify : MonoBehaviour
                             }
                         }
                     }
-                    else if (Input.GetMouseButtonUp(0))
+                    else if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(2))
                     {
                         if (isDraggingVertex)
                         {
@@ -766,6 +635,8 @@ public class Modify : MonoBehaviour
                                     }
                                 }
                                 isDraggingVertex = false;
+                                if (Input.GetMouseButtonUp(2))
+                                    penToolToggle.isOn = true;
                             }
                         }
                         else if (isDraggingShape)
@@ -789,6 +660,8 @@ public class Modify : MonoBehaviour
                                     }
                                 }
                                 isDraggingShape = false;
+                                if (Input.GetMouseButtonUp(2))
+                                    penToolToggle.isOn = true;
                             }
                         }
                     }
