@@ -83,6 +83,10 @@ public class WorldState {
     // Takes a WorldPos and answers with list of shapes at that position
     public List<Shape> shapesAtPos(WorldPos pos)
     {
-        return posDictionary[pos];
+        if (posDictionary.ContainsKey(pos))
+        {
+            return posDictionary[pos];
+        }
+        return new List<Shape>();
     }
 }

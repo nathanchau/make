@@ -10,6 +10,7 @@ public class Shape
 
 	// Variables
 	public World world;
+    public WorldState worldState;
     public int mode;
 
 	// All vertices, organized by plane
@@ -37,9 +38,10 @@ public class Shape
 	private bool isFirstPoint = true;
 	private bool firstPlaneSet = false;
 
-	public Shape(World newWorld, int newMode) 
+	public Shape(World newWorld, WorldState newWorldState, int newMode) 
 	{
 		world = newWorld;
+        worldState = newWorldState;
         mode = newMode;
     }
 	
@@ -132,7 +134,7 @@ public class Shape
 			if (Plane.isCoplanar(shape.currentPlane, currentPoint))
 			{
 				// Erase current fill
-				EditTerrain.SetAllBlocksGivenPos(shape.world, shape.currentPlane.fillPosList, shape.hit, new BlockAir());
+				EditTerrain.SetAllBlocksGivenPos(shape.world, shape.currentPlane.fillPosList, shape.hit, new BlockAir(), true, shape.worldState);
 				shape.currentPlane.fillPosList = new List<WorldPos>();
 				
 				// Remove the previously inferred edge
@@ -166,7 +168,7 @@ public class Shape
                 // Remove edge between planes
                 List<WorldPos> tempEdgeList = shape.currentPlane.edgeList[shape.currentPlane.edgeList.Count - 1];
                 tempEdgeList.RemoveAt(0);
-                EditTerrain.SetAllBlocksGivenPos(shape.world, tempEdgeList, shape.hit, new BlockAir());
+                EditTerrain.SetAllBlocksGivenPos(shape.world, tempEdgeList, shape.hit, new BlockAir(), true, shape.worldState);
                 foreach (WorldPos p in tempEdgeList)
                 {
                     shape.posList[shape.posList.Count - 1].Remove(p);
@@ -193,7 +195,7 @@ public class Shape
 		if (shape.firstPlaneSet)
 		{
 			// Erase previous lofting plane
-			EditTerrain.SetAllBlocksGivenPos(shape.world, shape.currentPlane.loftFillPosList, shape.hit, new BlockAir());
+			EditTerrain.SetAllBlocksGivenPos(shape.world, shape.currentPlane.loftFillPosList, shape.hit, new BlockAir(), true, shape.worldState);
 			// Set new lofting plane
 			shape.currentPlane.loftFillPosList = EditTerrain.LoftAndFillPlanes(shape.planes[shape.planes.Count - 2].vertexPosList, shape.planes[shape.planes.Count - 2].edgeList, shape.planes[shape.planes.Count - 1].vertexPosList, shape.planes[shape.planes.Count - 1].edgeList, shape.hit, shape.world, new BlockTemp());
 		}
@@ -239,7 +241,7 @@ public class Shape
         planes[planeIndex].vertexPosList.Insert(posIndex, newPos);
 
         // Erase
-        EditTerrain.SetAllBlocksGivenPos(world, posList[planeIndex].Concat(planes[planeIndex].fillPosList).ToList(), hit, new BlockAir());
+        EditTerrain.SetAllBlocksGivenPos(world, posList[planeIndex].Concat(planes[planeIndex].fillPosList).ToList(), hit, new BlockAir(), true, worldState);
 
         // posList, edgeList and fillPosList
         posList[planeIndex] = new List<WorldPos>();
@@ -273,7 +275,7 @@ public class Shape
         if (planeIndex > 0)
         {
             // Erase previous lofting plane
-            EditTerrain.SetAllBlocksGivenPos(world, planes[planeIndex].loftFillPosList, hit, new BlockAir());
+            EditTerrain.SetAllBlocksGivenPos(world, planes[planeIndex].loftFillPosList, hit, new BlockAir(), true, worldState);
             // Set new lofting plane
             planes[planeIndex].loftFillPosList = EditTerrain.LoftAndFillPlanes(planes[planeIndex - 1].vertexPosList, planes[planeIndex - 1].edgeList, planes[planeIndex].vertexPosList, planes[planeIndex].edgeList, hit, world, new BlockTemp());
         }
@@ -281,9 +283,28 @@ public class Shape
         {
             // Have to loft between this and next plane as well
             // Erase previous lofting plane
-            EditTerrain.SetAllBlocksGivenPos(world, planes[planeIndex + 1].loftFillPosList, hit, new BlockAir());
+            EditTerrain.SetAllBlocksGivenPos(world, planes[planeIndex + 1].loftFillPosList, hit, new BlockAir(), true, worldState);
             // Set new lofting plane
             planes[planeIndex+1].loftFillPosList = EditTerrain.LoftAndFillPlanes(planes[planeIndex].vertexPosList, planes[planeIndex].edgeList, planes[planeIndex + 1].vertexPosList, planes[planeIndex + 1].edgeList, hit, world, new BlockTemp());
+        }
+
+        // Fill in the planes and edges again just in case they got deleted - just need to set the blocks
+        for (int j = 0; j < vertices.Count; j++)
+        {
+            if (vertices[j].Count > 1)
+            {
+                for (int i = 1; i < planes[j].vertexPosList.Count; i++)
+                {
+                    EditTerrain.SetAllBlocksBetweenPos(planes[j].vertexPosList[i - 1], planes[j].vertexPosList[i], world, hit, new BlockTemp());
+                }
+                EditTerrain.SetAllBlocksBetweenPos(planes[j].vertexPosList[planes[j].vertexPosList.Count - 1], planes[j].vertexPosList[0], world, hit, new BlockTemp());
+            }
+
+            if (vertices[j].Count > 2)
+            {
+                // Set blocks in the planar polygon
+                EditTerrain.SetAllBlocksInPlane(world, posList[j].Concat(planes[j].fillPosList).ToList(), planes[j].vertexPosList, planes[j].edgeList, planes[j], hit, new BlockTemp());
+            }
         }
 
         // Set vertices again so we get different coloured vertices
@@ -326,7 +347,7 @@ public class Shape
         {
             flatVertices.AddRange(posList);
         }
-        EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTemp());
+        EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTemp(), true, worldState);
 
         // Find unique points - set them to blocktemp and blockair respectively
         //List<WorldPos> intersection = newPosList.Intersect<WorldPos>(oldPosList).ToList();
@@ -335,8 +356,8 @@ public class Shape
 
         //EditTerrain.SetAllBlocksGivenPos(world, uniqueNewPosList, hit, new BlockTemp());
         //EditTerrain.SetAllBlocksGivenPos(world, uniqueOldPosList, hit, new BlockAir());
-        EditTerrain.SetAllBlocksGivenPos(world, oldPosList, hit, new BlockAir());
-        EditTerrain.SetAllBlocksGivenPos(world, newPosList, hit, new BlockTemp());
+        EditTerrain.SetAllBlocksGivenPos(world, oldPosList, hit, new BlockAir(), true, worldState);
+        EditTerrain.SetAllBlocksGivenPos(world, newPosList, hit, new BlockTemp(), true, worldState);
 
         // Have to shift: vertices, posList, position, lastPosition, firstPositionOnPlane
         //  in Planes: recalculate plane variables, vertexPosList, edgeList, fillPosList, loftFillPosList
@@ -391,6 +412,6 @@ public class Shape
         {
             flatVertices.AddRange(posList);
         }
-        EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTempVertex());
+        EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTempVertex(), true, worldState);
     }
 }

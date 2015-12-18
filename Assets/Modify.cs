@@ -63,7 +63,7 @@ public class Modify : MonoBehaviour
 	{
 		point = new Vector3 (0.0f, 0.0f);
 		transform.LookAt (point);
-		currentShape = new Shape(world, mode);
+		currentShape = new Shape(world, worldState, mode);
 		inspectorModify.shape = currentShape;
 
 	}
@@ -278,7 +278,7 @@ public class Modify : MonoBehaviour
                             {
 								if (isFirstPoint)
 								{
-									currentShape = new Shape(world, mode);
+									currentShape = new Shape(world, worldState, mode);
 									Shape.addVertexWithHit(currentShape, hit, true);
 									isFirstPoint = false;
 									inspectorModify.shape = currentShape;
@@ -321,7 +321,7 @@ public class Modify : MonoBehaviour
                     // Reset everything
                     // Null out lastHit
                     lastHit = default(RaycastHit);
-					currentShape = new Shape(world, mode);
+					currentShape = new Shape(world, worldState, mode);
 					inspectorModify.shape = currentShape;
 
                     // Reset first counters
@@ -446,7 +446,7 @@ public class Modify : MonoBehaviour
                                     posList.AddRange(plane.fillPosList);
                                     posList.AddRange(plane.loftFillPosList);
                                 }
-                                EditTerrain.SetAllBlocksGivenPos(world, posList, hit, new BlockTemp());
+                                EditTerrain.SetAllBlocksGivenPos(world, posList, hit, new BlockTemp(), true, worldState);
 
                                 // -- Set vertices to right colour
                                 List<WorldPos> flatVertices = new List<WorldPos>();
@@ -454,7 +454,7 @@ public class Modify : MonoBehaviour
                                 {
                                     flatVertices.AddRange(tempPosList);
                                 }
-                                EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTempVertex());
+                                EditTerrain.SetAllBlocksGivenPos(world, flatVertices, hit, new BlockTempVertex(), true, worldState);
 
                                 // Set up inspector
                                 inspectorModify.shape = currentShape;
@@ -725,7 +725,7 @@ public class Modify : MonoBehaviour
                         // Reset everything
                         // Null out lastHit
                         lastHit = default(RaycastHit);
-                        currentShape = new Shape(world, mode);
+                        currentShape = new Shape(world, worldState, mode);
                         inspectorModify.shape = currentShape;
 
                         // Reset first counters

@@ -220,7 +220,7 @@ public static class EditTerrain
         return posList;
 	}
 	
-	public static bool SetAllBlocksGivenPos(World world, List<WorldPos> posList, RaycastHit lastHit, Block block)
+	public static bool SetAllBlocksGivenPos(World world, List<WorldPos> posList, RaycastHit lastHit, Block block, bool checkEnvironment = false, WorldState worldState = null)
     {
         Chunk chunk = lastHit.collider.GetComponent<Chunk>();
         if (chunk == null && lastHit.collider.tag != "guide")
@@ -228,7 +228,15 @@ public static class EditTerrain
 
         foreach (WorldPos pos in posList)
         {
-            world.SetBlock(pos.x, pos.y, pos.z, block);
+            if (checkEnvironment)
+            {
+                // Check against the worldState
+                List<Shape> shapes = worldState.shapesAtPos(pos);
+                if (shapes.Count == 0)
+                    world.SetBlock(pos.x, pos.y, pos.z, block);
+            }
+            else
+                world.SetBlock(pos.x, pos.y, pos.z, block);
         }
         return true;
     }
