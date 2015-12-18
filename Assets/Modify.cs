@@ -43,7 +43,7 @@ public class Modify : MonoBehaviour
 	public bool inInputField = false;
 
     // Pen Mode Variables
-	bool isFirstPoint = true;
+	bool isFirstPoint = true; // isFirstPoint also tells us whether we're in middle of pen tool creation - !isFirstPoint = inCreation
 	public Shape currentShape;
 
 	List<WorldPos> posList = new List<WorldPos>();
@@ -459,6 +459,36 @@ public class Modify : MonoBehaviour
                                 // Set up inspector
                                 inspectorModify.shape = currentShape;
                                 inspectorModify.recalculateInspectorLayout();
+
+                                // Throw it into pen mode drag
+                                // Check if it's within vertices
+                                bool isVertex = false;
+                                if (flatVertices.Contains(currentPos))
+                                    isVertex = true;
+                                if (isVertex)
+                                {
+                                    isDraggingVertex = true;
+                                    inspectorModify.highlightVertex(dragPlaneIndex, dragPosIndex);
+                                    highlightCircleModify.currentPos = currentPos;
+                                    highlightCircleModify.isHighlighted = true;
+                                    lastDragPos = currentPos;
+                                    // Move guide plane to be centered at new position
+                                    guidePlane.transform.position = new Vector3(currentPos.x, currentPos.y, currentPos.z);
+                                    // Get current screen space position of cursor
+                                    dragMousePos = Input.mousePosition;
+                                    startedDragging = false;
+                                }
+                                else
+                                {
+                                    isDraggingShape = true;
+                                    lastDragPos = currentPos;
+                                    inspectorModify.turnOffAllHighlights();
+                                    highlightCircleModify.isHighlighted = false;
+                                    // Move guide plane to be centered at new position
+                                    guidePlane.transform.position = new Vector3(currentPos.x, currentPos.y, currentPos.z);
+                                    dragMousePos = Input.mousePosition;
+                                    startedDragging = false;
+                                }
                             }
                         }
                     }
@@ -664,6 +694,49 @@ public class Modify : MonoBehaviour
                                     penToolToggle.isOn = true;
                             }
                         }
+                    }
+                    else if (Input.GetMouseButtonDown(1))
+                    {
+                        // [ ] Not sure about this behaviour - need to think it through more
+                        // Change all newly added blocks to the right block type
+                        posList = new List<WorldPos>();
+                        foreach (List<WorldPos> tempPosList in currentShape.posList)
+                        {
+                            posList.AddRange(tempPosList);
+                        }
+                        foreach (Plane plane in currentShape.planes)
+                        {
+                            posList.AddRange(plane.fillPosList);
+                            posList.AddRange(plane.loftFillPosList);
+                        }
+                        RaycastHit hit;
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 200))
+                        {
+                            EditTerrain.SetAllBlocksGivenPos(world, posList, hit, new BlockGrass());
+                        }
+                        else
+                        {
+                            EditTerrain.SetAllBlocksGivenPos(world, posList, lastHit, new BlockGrass());
+                        }
+
+                        // Store the shape we made in the world state
+                        worldState.storeShape(currentShape);
+
+                        // Reset everything
+                        // Null out lastHit
+                        lastHit = default(RaycastHit);
+                        currentShape = new Shape(world, mode);
+                        inspectorModify.shape = currentShape;
+
+                        // Reset first counters
+                        isFirstPoint = true;
+
+                        // Destroy all sections in inspector
+                        //					inspectorModify.minimizeAllSections();
+                        inspectorModify.destroyAllSections();
+
+                        // Remove highlight circle
+                        highlightCircleModify.isHighlighted = false;
                     }
                 }
             }

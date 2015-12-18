@@ -80,6 +80,7 @@ public class Shape
         }
 
         shape.currentPlane.vertexPosList.Add(placedEdgePosList[placedEdgePosList.Count - 1]);
+        //Debug.Log(shape.currentPlane.vertexPosList.Last<WorldPos>().x + "," + shape.currentPlane.vertexPosList.Last<WorldPos>().y + "," + shape.currentPlane.vertexPosList.Last<WorldPos>().z);
 		shape.vertices[shape.vertices.Count - 1].Add(placedEdgePosList[placedEdgePosList.Count - 1]);
 		//Debug.Log("z being placed: " + placedEdgePosList[placedEdgePosList.Count - 1].z);
 		shape.lastHit = shape.hit;

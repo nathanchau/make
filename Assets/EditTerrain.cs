@@ -290,7 +290,7 @@ public static class EditTerrain
                 //  or take 2 points, which means you don't fill 
                 // We'll take two points if it's a local minimum/maximum, otherwise only take one point
                 // First, detect if we're on a vertex
-                for (int i = 0; i < vertexPosList.Count - 1; i++)
+                for (int i = 0; i < vertexPosList.Count; i++)
                 {
                     if (vertexPosList[i].y == y)
                     {
@@ -378,10 +378,10 @@ public static class EditTerrain
 						float z = -A/C*(float)x - B/C*(float)y - D/C;
 						// Place block
 						Block tempBlock = world.GetBlock(x, y, Mathf.RoundToInt(z));
-						if (tempBlock is BlockAir)
+                        filledPosList.Add(new WorldPos(x, y, Mathf.RoundToInt(z)));
+                        if (tempBlock is BlockAir)
 						{
 							world.SetBlock(x, y, Mathf.RoundToInt(z), block);
-							filledPosList.Add(new WorldPos(x, y, Mathf.RoundToInt(z)));
 							//Debug.Log("Placed: " + x + "," + y + "," + z + "/" + Mathf.RoundToInt(z));
 						}
 					}
@@ -412,10 +412,12 @@ public static class EditTerrain
                 //  or take 2 points, which means you don't fill 
                 // We'll take two points if it's a local minimum/maximum, otherwise only take one point
                 // First, detect if we're on a vertex
-                for (int i = 0; i < vertexPosList.Count - 1; i++)
+                for (int i = 0; i < vertexPosList.Count; i++)
                 {
+                    //Debug.Log(vertexPosList[i].z);
                     if (vertexPosList[i].z == z)
                     {
+                        //Debug.Log("checking");
                         // If we're on a vertex, then get the edges that connect to it
                         int indexEdge1 = i - 1;
                         int indexEdge2 = i + 1;
@@ -501,10 +503,10 @@ public static class EditTerrain
 						float y = -A/B*(float)x - C/B*(float)z - D/B;
 						// Place block
 						Block tempBlock = world.GetBlock(x, Mathf.RoundToInt(y), z);
-						if (tempBlock is BlockAir)
+                        filledPosList.Add(new WorldPos(x, Mathf.RoundToInt(y), z));
+                        if (tempBlock is BlockAir)
 						{
 							world.SetBlock(x, Mathf.RoundToInt(y), z, block);
-							filledPosList.Add(new WorldPos(x, Mathf.RoundToInt(y), z));
 							//Debug.Log("Placed: " + x + "," + y + "/" + Mathf.RoundToInt(y) + "," + z);
 						}
 					}
@@ -535,7 +537,7 @@ public static class EditTerrain
                 //  or take 2 points, which means you don't fill 
                 // We'll take two points if it's a local minimum/maximum, otherwise only take one point
                 // First, detect if we're on a vertex
-                for (int i = 0; i < vertexPosList.Count - 1; i++)
+                for (int i = 0; i < vertexPosList.Count; i++)
                 {
                     if (vertexPosList[i].z == z)
                     {
@@ -623,10 +625,10 @@ public static class EditTerrain
 						float x = -B/A*(float)y - C/A*(float)z - D/A;
 						// Place block
 						Block tempBlock = world.GetBlock(Mathf.RoundToInt(x), y, z);
-						if (tempBlock is BlockAir)
+                        filledPosList.Add(new WorldPos(Mathf.RoundToInt(x), y, z));
+                        if (tempBlock is BlockAir)
 						{
 							world.SetBlock(Mathf.RoundToInt(x), y, z, block);
-							filledPosList.Add(new WorldPos(Mathf.RoundToInt(x), y, z));
 							//Debug.Log("Placed: " + Mathf.RoundToInt(x) + "/" + x + "," + y + "," + z);
 						}
 					}
